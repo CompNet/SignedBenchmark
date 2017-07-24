@@ -203,10 +203,10 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 ###############################################################################
 # Test
 ###############################################################################
-#n <- 1000									# number of nodes
-#k <- 5										# number of clusters
-#dens <- 0.001								# constant density
-#prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
-#prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
-#generate.signed.graphs(n, k, dens, prop.mispls, prop.negs)
-#plot.graph.stats(n, k, dens, prop.mispls, prop.negs)
+n <- 1000									# number of nodes
+k <- 5										# number of clusters
+dens <- 0.001								# constant density
+prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
+prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
+generate.signed.graphs(n, k, dens, prop.mispls, prop.negs)
+plot.graph.stats(n, k, dens, prop.mispls, prop.negs)

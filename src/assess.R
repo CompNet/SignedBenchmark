@@ -136,8 +136,11 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 ###############################################################################
 n <- 1000									# number of nodes
 k <- 5										# number of clusters
-dens <- 0.001								# constant density
+dens <- 0.01								# constant density
 prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
 prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
-#apply.infomap(n, k, dens, prop.mispls, prop.negs)
+apply.infomap(n, k, dens, prop.mispls, prop.negs)
 plot.algo.stats(n, k, dens, prop.mispls, prop.negs)
+
+# TODO
+# - generate plots of the raw graphs, and of the detected partitions as well (use the script from netvotes)
