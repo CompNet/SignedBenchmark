@@ -115,7 +115,11 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 ###############################################################################
 # Generates graph plots, to check if their structure corresponds to our expectations.
 #
-# 
+# n: number of nodes in the graph.
+# k: number of clusters in the graph.
+# dens: total density of the graph (counting both negative and positive links).
+# prop.mispls: vector of proportions of misplaced links.
+# prop.negs: vector of proportions of negative links in the network.
 ###############################################################################
 plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 {	CODE_DENSITY <- "Density"
@@ -205,4 +209,4 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 #prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
 #prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
 #generate.signed.graphs(n, k, dens, prop.mispls, prop.negs)
-plot.graph.stats(n, k, dens, prop.mispls, prop.negs)
+#plot.graph.stats(n, k, dens, prop.mispls, prop.negs)
