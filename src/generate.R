@@ -32,24 +32,67 @@ source("src/file.R")
 # returns: a signed graph randomly generated according to the specified parameters.
 ###############################################################################
 generate.signed.graph <- function(n, membership, dens, prop.mispl, prop.neg)
-{	# init probabilities
-	p.pos.int <- (1-prop.neg)*(1-prop.mispl)*dens
-	p.neg.int <- prop.neg*prop.mispl*dens
-	p.none.int <- 1 - p.pos.int - p.neg.int
-	p.pos.ext <- (1-prop.neg)*prop.mispl*dens
-	p.neg.ext <- prop.neg*(1-prop.mispl)*dens
-	p.none.ext <- 1 - p.pos.ext - p.neg.ext
+{	# init other proportions
+#	prop.pos <- 1 - prop.neg
+#	prop.well <- 1 - prop.mispl
+#	prop.int <- prop.pos*prop.well + prop.neg*prop.mispl
+#	prop.ext <- prop.pos*prop.mispl + prop.neg*prop.well
+#	
+#	# init probabilities
+#	p.pos.int <- prop.pos*prop.int*dens
+#	p.neg.int <- prop.neg*prop.int*dens
+#	p.none.int <- 1 - p.pos.int - p.neg.int
+#	p.pos.ext <- prop.pos*prop.ext*dens
+#	p.neg.ext <- prop.neg*prop.ext*dens
+#	p.none.ext <- 1 - p.pos.ext - p.neg.ext
 	
-	tlog(8,"Internal probas: neg=",p.neg.int," pos=",p.pos.int," none=",p.none.int)
-	tlog(8,"External probas: neg=",p.neg.ext," pos=",p.pos.ext," none=",p.none.ext)
+	qm <- prop.mispl
+	qw <- 1 - qm
+	tlog(8,"qm=",qm," qw=",qw)
+	
+	p.neg <- prop.neg * dens
+	p.pos <- dens - p.neg
+	tlog(8,"p.neg=",p.neg," p.pos=",p.pos," (total=",p.neg+p.pos,")")
+	
+	p.int <- sum(sapply(1:max(membership), function(c)
+		{	n <- length(which(membership==c))
+			n*(n-1)/2
+		})) / (n*(n-1)/2)
+	p.ext <- sum(apply(t(combn(x=max(membership),m=2,simplify=TRUE)), 1, function(r)
+		{	n1 <- length(which(membership==r[1]))
+			n2 <- length(which(membership==r[2]))
+			n1 * n2
+		})) / (n*(n-1)/2)
+	tlog(8,"p.int=",p.int," p.ext=",p.ext," (total=",p.int+p.ext,")")
+
+	p.neg.int <- qm * p.neg * dens / p.int
+	p.pos.int <- qw * p.pos * dens / p.int
+	p.none.int <- 1 - p.pos.int - p.neg.int
+	tlog(8,"Internal probas: neg=",sprintf("%.4f",p.neg.int)," pos=",sprintf("%.4f",p.pos.int)," none=",sprintf("%.4f",p.none.int))
+	
+	p.neg.ext <- qw * p.neg * dens / p.ext
+	p.pos.ext <- qm * p.pos * dens / p.ext
+	p.none.ext <- 1 - p.pos.ext - p.neg.ext
+	tlog(8,"External probas: neg=",sprintf("%.4f",p.neg.ext)," pos=",sprintf("%.4f",p.pos.ext)," none=",sprintf("%.4f",p.none.ext))
 	
 	# draw links
 	el <- t(combn(x=n, m=2, simplify=TRUE))
 	comembership <- sapply(1:nrow(el),function(r) membership[el[r,1]]==membership[el[r,2]])
-	tlog(8,"Maximal link numbers: total=",nrow(el)," internal=",length(which(comembership))," external=",length(which(!comembership)))
+	norm.int <- length(which(comembership))
+	norm.ext <- length(which(!comembership))
+	tlog(8,"Maximal link numbers: total=",nrow(el)," internal=",norm.int," external=",norm.ext)
+	tlog(8,"Expected link numbers: total=",round(nrow(el)*dens)," positive=",round(nrow(el)*dens*(1-prop.neg))," negative=",round(nrow(el)*dens*prop.neg)," well-placed=",round(nrow(el)*dens*(1-prop.mispl))," misplaced=",round(nrow(el)*dens*prop.mispl))
 	weights <- rep(NA,nrow(el))
 	weights[comembership] <- sample(x=c(-1,+1,0),size=length(which(comembership)),replace=TRUE,prob=c(p.neg.int,p.pos.int,p.none.int))
+	obs.p.neg.int <- length(which(weights[comembership]<0))/norm.int
+	obs.p.pos.int <- length(which(weights[comembership]>0))/norm.int
+	obs.p.none.int <- length(which(weights[comembership]==0))/norm.int
+	tlog(8,"Drawn internal probas: neg=",sprintf("%.4f",obs.p.neg.int)," pos=",sprintf("%.4f",obs.p.pos.int)," none=",sprintf("%.4f",obs.p.none.int))
 	weights[!comembership] <- sample(x=c(-1,+1,0),size=length(which(!comembership)),replace=TRUE,prob=c(p.neg.ext,p.pos.ext,p.none.ext))
+	obs.p.neg.ext <- length(which(weights[!comembership]<0))/norm.ext
+	obs.p.pos.ext <- length(which(weights[!comembership]>0))/norm.ext
+	obs.p.none.ext <- length(which(weights[!comembership]==0))/norm.ext
+	tlog(8,"Drawn external probas: neg=",sprintf("%.4f",obs.p.neg.ext)," pos=",sprintf("%.4f",obs.p.pos.ext)," none=",sprintf("%.4f",obs.p.none.ext))
 	tlog(8,"Drawn link numbers: total=",length(which(weights!=0))," positive=",length(which(weights>0))," negative=",length(which(weights<0)))
 	idx <- which(weights==0)
 	if(length(idx)>0)
@@ -174,7 +217,9 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 		# function of the proportion of misplaced links
 		plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
 		pdf(file=plot.file,bg="white")
-		plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), ylim=c(0,1), xlab="Desired proportion of misplaced links", ylab=code)
+		plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
+				ylim=c(min(data),max(data)), 
+				xlab="Desired proportion of misplaced links", ylab=code)
 		c <- 0
 		for(j in 1:length(prop.negs))
 		{	lines(x=prop.mispls, y=data[,j], col=colors[c])
@@ -187,7 +232,9 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 		c <- 0
 		plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
 		pdf(file=plot.file,bg="white")
-		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), ylim=c(0,1), xlab="Desired proportion of negative links", ylab=code)
+		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
+				ylim=c(min(data),max(data)), 
+				xlab="Desired proportion of negative links", ylab=code)
 		for(i in 1:length(prop.mispls))
 		{	lines(x=prop.negs, y=data[i,], col=colors[c])
 			c <- c + 1

@@ -144,3 +144,4 @@ plot.algo.stats(n, k, dens, prop.mispls, prop.negs)
 
 # TODO
 # - generate plots of the raw graphs, and of the detected partitions as well (use the script from netvotes)
+# - pb: the proportions of pos/neg and well/mispl do not respect the parameters
