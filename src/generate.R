@@ -65,13 +65,13 @@ generate.signed.graph <- function(n, membership, dens, prop.mispl, prop.neg)
 		})) / (n*(n-1)/2)
 	tlog(8,"p.int=",p.int," p.ext=",p.ext," (total=",p.int+p.ext,")")
 
-	p.neg.int <- qm * p.neg * dens / p.int
-	p.pos.int <- qw * p.pos * dens / p.int
+	p.neg.int <- qm * p.neg / p.int
+	p.pos.int <- qw * p.pos / p.int
 	p.none.int <- 1 - p.pos.int - p.neg.int
 	tlog(8,"Internal probas: neg=",sprintf("%.4f",p.neg.int)," pos=",sprintf("%.4f",p.pos.int)," none=",sprintf("%.4f",p.none.int))
 	
-	p.neg.ext <- qw * p.neg * dens / p.ext
-	p.pos.ext <- qm * p.pos * dens / p.ext
+	p.neg.ext <- qw * p.neg / p.ext
+	p.pos.ext <- qm * p.pos / p.ext
 	p.none.ext <- 1 - p.pos.ext - p.neg.ext
 	tlog(8,"External probas: neg=",sprintf("%.4f",p.neg.ext)," pos=",sprintf("%.4f",p.pos.ext)," none=",sprintf("%.4f",p.none.ext))
 	

@@ -105,7 +105,10 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 	{	# function of the proportion of misplaced links
 		plot.file <- file.path(get.folder.path(n, k, dens), "infomap-imbalance_vs_propmisp.PDF")
 		pdf(file=plot.file,bg="white")
-		plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), ylim=c(0,1), xlab="Desired proportion of misplaced links", ylab="Imbalance (proportion of misplaced links)")
+		plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
+#				ylim=c(0,1),
+				ylim=c(min(imbalance),max(imbalance)),
+				xlab="Desired proportion of misplaced links", ylab="Imbalance (proportion of misplaced links)")
 		c <- 0
 		for(j in 1:length(prop.negs))
 		{	lines(x=prop.mispls, y=imbalance[,j], col=colors[c])
@@ -118,7 +121,10 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 		c <- 0
 		plot.file <- file.path(get.folder.path(n, k, dens), "infomap-imbalance_vs_propneg.PDF")
 		pdf(file=plot.file,bg="white")
-		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), ylim=c(0,1), xlab="Desired proportion of negative links", ylab="Imbalance (proportion of misplaced links)")
+		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
+#				ylim=c(0,1), 
+				ylim=c(min(imbalance),max(imbalance)),
+				xlab="Desired proportion of negative links", ylab="Imbalance (proportion of misplaced links)")
 		for(i in 1:length(prop.mispls))
 		{	lines(x=prop.negs, y=imbalance[i,], col=colors[c])
 			c <- c + 1
@@ -136,10 +142,10 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 ###############################################################################
 n <- 1000									# number of nodes
 k <- 5										# number of clusters
-dens <- 0.01								# constant density
+dens <- 0.001								# constant density
 prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
 prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
-apply.infomap(n, k, dens, prop.mispls, prop.negs)
+#apply.infomap(n, k, dens, prop.mispls, prop.negs)
 plot.algo.stats(n, k, dens, prop.mispls, prop.negs)
 
 # TODO
