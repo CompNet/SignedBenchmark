@@ -83,21 +83,7 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 # prop.negs: vector of proportions of negative links in the network.
 ###############################################################################
 plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
-{	# taken from http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=9
-	colors <- c(
-		rgb(228,26,28,maxColorValue=255),
-		rgb(55,126,184,maxColorValue=255),
-		rgb(77,175,74,maxColorValue=255),
-		rgb(152,78,163,maxColorValue=255),
-		rgb(255,127,0,maxColorValue=255),
-		rgb(255,255,51,maxColorValue=255),
-		rgb(166,86,40,maxColorValue=255),
-		rgb(247,129,191,maxColorValue=255),
-		rgb(153,153,153,maxColorValue=255),
-		rgb(0,0,0,maxColorValue=255)
-	)
-	
-	# load each graph and process its stats
+{	# load each graph and process its stats
 	imbalance <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
 	for(i in 1:length(prop.mispls))
 	{	for(j in 1:length(prop.negs))
@@ -118,16 +104,16 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 #				ylim=c(0,1),
 				ylim=c(min(imbalance),max(imbalance)),
 				xlab="Desired proportion of misplaced links", ylab="Imbalance (proportion of misplaced links)")
-		c <- 0
+		cc <- 1
 		for(j in 1:length(prop.negs))
-		{	lines(x=prop.mispls, y=imbalance[,j], col=colors[c])
-			c <- c + 1
+		{	lines(x=prop.mispls, y=imbalance[,j], col=COLORS[cc])
+			cc <- cc + 1
 		}
-		legend(x="topright",fill=colors,legend=prop.negs, title="Negative links")
+		legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
 		dev.off()
 		
 		# function of the proportion of negative links
-		c <- 0
+		cc <- 1
 		plot.file <- file.path(get.folder.path(n, k, dens), "infomap-imbalance_vs_propneg.PDF")
 		pdf(file=plot.file,bg="white")
 		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
@@ -135,10 +121,10 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 				ylim=c(min(imbalance),max(imbalance)),
 				xlab="Desired proportion of negative links", ylab="Imbalance (proportion of misplaced links)")
 		for(i in 1:length(prop.mispls))
-		{	lines(x=prop.negs, y=imbalance[i,], col=colors[c])
-			c <- c + 1
+		{	lines(x=prop.negs, y=imbalance[i,], col=COLORS[cc])
+			cc <- cc + 1
 		}
-		legend(x="topright",fill=colors,legend=prop.negs, title="Misplaced links")
+		legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
 		dev.off()
 	}
 }	

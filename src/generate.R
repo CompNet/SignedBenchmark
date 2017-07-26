@@ -173,21 +173,6 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 	FILE_NAMES[CODE_PROP_EXT] <- "prop_ext_links"
 	membership <- rep(1:k,each=n%/%k)
 	
-	# taken from http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=9
-	colors <- c(
-		rgb(228,26,28,maxColorValue=255),
-		rgb(55,126,184,maxColorValue=255),
-		rgb(77,175,74,maxColorValue=255),
-		rgb(152,78,163,maxColorValue=255),
-		rgb(255,127,0,maxColorValue=255),
-		rgb(255,255,51,maxColorValue=255),
-		rgb(166,86,40,maxColorValue=255),
-		rgb(247,129,191,maxColorValue=255),
-		rgb(153,153,153,maxColorValue=255),
-		rgb(0,0,0,maxColorValue=255),
-		rgb(50,50,50,maxColorValue=255)
-)
-	
 	# load each graph and process its stats
 	res <- list()
 	res[[CODE_DENSITY]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
@@ -217,26 +202,26 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 		plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
 				ylim=c(min(data),max(data)), 
 				xlab="Desired proportion of misplaced links", ylab=code)
-		c <- 0
+		cc <- 1
 		for(j in 1:length(prop.negs))
-		{	lines(x=prop.mispls, y=data[,j], col=colors[c])
-			c <- c + 1
+		{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
+			cc <- cc + 1
 		}
-		legend(x="topright",fill=colors,legend=prop.negs, title="Negative links")
+		legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
 		dev.off()
 		
 		# function of the proportion of negative links
-		c <- 0
+		cc <- 1
 		plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
 		pdf(file=plot.file,bg="white")
 		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
 				ylim=c(min(data),max(data)), 
 				xlab="Desired proportion of negative links", ylab=code)
 		for(i in 1:length(prop.mispls))
-		{	lines(x=prop.negs, y=data[i,], col=colors[c])
-			c <- c + 1
+		{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
+			cc <- cc + 1
 		}
-		legend(x="topright",fill=colors,legend=prop.negs, title="Misplaced links")
+		legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
 		dev.off()
 	}
 }	
