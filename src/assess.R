@@ -7,12 +7,13 @@ library("igraph")
 
 source("src/common.R")
 source("src/file.R")
+source("src/plot.R")
 
 
 
 
 ###############################################################################
-# Applies the Infomap algorithm to the signed graphs previously generated
+# Applies the InfoMap algorithm to the signed graphs previously generated
 # using the random model. The identified partition is recorded in the same folder
 # as the graph.
 #
@@ -23,7 +24,7 @@ source("src/file.R")
 # prop.negs: vector of proportions of negative links in the network.
 ###############################################################################
 apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
-{	tlog(0,"Start to apply infomap to the previously generalted collection of signed network")
+{	tlog(0,"Start to apply InfoMap to the previously generalted collection of signed network")
 	tlog(2,"Parameters:")
 	tlog(4,"n=",n)
 	tlog(4,"k=",k)
@@ -45,6 +46,9 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 			folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
 			g <- read.graph(file=file.path(folder,"network.graphml"),format="graphml")
 			
+			# plot the graph and detected partition
+			g <- plot.network(g, membership, plot.file=file.path(folder,"network.PDF"), format="PDF")
+			
 			# apply the partitioning algorithm
 			tlog(6,"Applying Infomap")
 			idx <- which(E(g)$weight<0)
@@ -57,7 +61,7 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 		}
 	}
 	
-	tlog(0,"Generation over")
+	tlog(0,"InfoMap processing over")
 }	
 
 

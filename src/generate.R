@@ -16,6 +16,7 @@ library("igraph")
 
 source("src/common.R")
 source("src/file.R")
+source("src/plot.R")
 
 
 
@@ -127,6 +128,9 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 			# generate the graph
 			tlog(6,"Generating the graph")
 			g <- generate.signed.graph(n, membership, dens, prop.mispl, prop.neg)
+			
+			# plot the graph
+			g <- plot.network(g, membership, plot.file=file.path(folder,"network.PDF"), format="PDF")
 			
 			# record the graph
 			folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
