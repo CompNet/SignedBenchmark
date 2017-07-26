@@ -1,5 +1,5 @@
-# SignedBenchmark v1
-=======
+SignedBenchmark v1
+==================
 *Benchmark to study partitioning problems on signed graphs*
 
 * Copyright 2017 Vincent Labatut 
