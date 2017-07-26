@@ -47,7 +47,7 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 			g <- read.graph(file=file.path(folder,"network.graphml"),format="graphml")
 			
 			# plot the graph and detected partition
-			g <- plot.network(g, membership, plot.file=file.path(folder,"network.PDF"), format="PDF")
+			g <- plot.network(g, membership, plot.file=file.path(folder,"network"), format="PDF")
 			
 			# apply the partitioning algorithm
 			tlog(6,"Applying Infomap")

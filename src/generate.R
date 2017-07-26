@@ -130,10 +130,10 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 			g <- generate.signed.graph(n, membership, dens, prop.mispl, prop.neg)
 			
 			# plot the graph
-			g <- plot.network(g, membership, plot.file=file.path(folder,"network.PDF"), format="PDF")
+			folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
+			g <- plot.network(g, membership, plot.file=file.path(folder,"network"), format="PDF")
 			
 			# record the graph
-			folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
 			tlog(6,"Recording the graph in folder ",folder)
 			dir.create(folder,showWarnings=FALSE,recursive=TRUE)
 			write_graph(graph=g,file=file.path(folder,"network.graphml"),format="graphml")
