@@ -83,30 +83,43 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 # prop.negs: vector of proportions of negative links in the network.
 ###############################################################################
 plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
-{	# load each graph and process its stats
-	imbalance <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
+{	CODE_IMBALANCE <- "Imbalance (proportion of misplaced links)"
+	CODE_NMI <- "Normalized Mutual Information"
+	CODES <- c(CODE_IMBALANCE, CODE_NMI)
+	FILE_NAMES <- c()
+	FILE_NAMES[CODE_IMBALANCE] <- "infomap-imbalance"
+	FILE_NAMES[CODE_NMI] <- "infomap-nmi"
+	gt.membership <- rep(1:k,each=n%/%k)
+	
+	# load each graph and process its stats
+	res <- list()
+	res[[CODE_IMBALANCE]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
+	res[[CODE_NMI]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
 	for(i in 1:length(prop.mispls))
 	{	for(j in 1:length(prop.negs))
 		{	folder <- get.folder.path(n, k, dens, prop.mispls[i], prop.negs[j])
 			g <- read.graph(file=file.path(folder,"network.graphml"),format="graphml")
-			membership <- as.matrix(read.table(file=file.path(folder,"infomap.txt")))
+			im.membership <- as.matrix(read.table(file=file.path(folder,"infomap.txt")))
 			el <- get.edgelist(graph=g,names=FALSE)
-			comembership <- sapply(1:nrow(el),function(r) membership[el[r,1]]==membership[el[r,2]])
-			imbalance[i,j] <- length(which((!comembership & E(g)$weight>0) | (comembership & E(g)$weight<0))) / ecount(g)
+			comembership <- sapply(1:nrow(el),function(r) im.membership[el[r,1]]==im.membership[el[r,2]])
+			res[[CODE_IMBALANCE]][i,j] <- length(which((!comembership & E(g)$weight>0) | (comembership & E(g)$weight<0))) / ecount(g)
+			res[[CODE_NMI]][i,j] <- compare(gt.membership,im.membership,method="nmi")
 		}
 	}
 	
 	# generate the plots
-	{	# function of the proportion of misplaced links
-		plot.file <- file.path(get.folder.path(n, k, dens), "infomap-imbalance_vs_propmisp.PDF")
+	for(code in CODES)
+	{	data <- res[[code]]
+		
+		# function of the proportion of misplaced links
+		plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
 		pdf(file=plot.file,bg="white")
 		plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
-#				ylim=c(0,1),
-				ylim=c(min(imbalance),max(imbalance)),
-				xlab="Desired proportion of misplaced links", ylab="Imbalance (proportion of misplaced links)")
+				ylim=c(min(data),max(data)), 
+				xlab="Desired proportion of misplaced links", ylab=code)
 		cc <- 1
 		for(j in 1:length(prop.negs))
-		{	lines(x=prop.mispls, y=imbalance[,j], col=COLORS[cc])
+		{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
 			cc <- cc + 1
 		}
 		legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
@@ -114,14 +127,13 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 		
 		# function of the proportion of negative links
 		cc <- 1
-		plot.file <- file.path(get.folder.path(n, k, dens), "infomap-imbalance_vs_propneg.PDF")
+		plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
 		pdf(file=plot.file,bg="white")
 		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
-#				ylim=c(0,1), 
-				ylim=c(min(imbalance),max(imbalance)),
-				xlab="Desired proportion of negative links", ylab="Imbalance (proportion of misplaced links)")
+				ylim=c(min(data),max(data)), 
+				xlab="Desired proportion of negative links", ylab=code)
 		for(i in 1:length(prop.mispls))
-		{	lines(x=prop.negs, y=imbalance[i,], col=COLORS[cc])
+		{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
 			cc <- cc + 1
 		}
 		legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
