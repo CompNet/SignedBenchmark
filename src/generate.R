@@ -32,28 +32,15 @@ source("src/file.R")
 # returns: a signed graph randomly generated according to the specified parameters.
 ###############################################################################
 generate.signed.graph <- function(n, membership, dens, prop.mispl, prop.neg)
-{	# init other proportions
-#	prop.pos <- 1 - prop.neg
-#	prop.well <- 1 - prop.mispl
-#	prop.int <- prop.pos*prop.well + prop.neg*prop.mispl
-#	prop.ext <- prop.pos*prop.mispl + prop.neg*prop.well
-#	
-#	# init probabilities
-#	p.pos.int <- prop.pos*prop.int*dens
-#	p.neg.int <- prop.neg*prop.int*dens
-#	p.none.int <- 1 - p.pos.int - p.neg.int
-#	p.pos.ext <- prop.pos*prop.ext*dens
-#	p.neg.ext <- prop.neg*prop.ext*dens
-#	p.none.ext <- 1 - p.pos.ext - p.neg.ext
-	
+{	# init proportions
 	qm <- prop.mispl
 	qw <- 1 - qm
 	tlog(8,"qm=",qm," qw=",qw)
-	
+	# init sign probas
 	p.neg <- prop.neg * dens
 	p.pos <- dens - p.neg
 	tlog(8,"p.neg=",p.neg," p.pos=",p.pos," (total=",p.neg+p.pos,")")
-	
+	# init position probas
 	p.int <- sum(sapply(1:max(membership), function(c)
 		{	n <- length(which(membership==c))
 			n*(n-1)/2
@@ -64,12 +51,12 @@ generate.signed.graph <- function(n, membership, dens, prop.mispl, prop.neg)
 			n1 * n2
 		})) / (n*(n-1)/2)
 	tlog(8,"p.int=",p.int," p.ext=",p.ext," (total=",p.int+p.ext,")")
-
+	# init internal probas
 	p.neg.int <- qm * p.neg / p.int
 	p.pos.int <- qw * p.pos / p.int
 	p.none.int <- 1 - p.pos.int - p.neg.int
 	tlog(8,"Internal probas: neg=",sprintf("%.4f",p.neg.int)," pos=",sprintf("%.4f",p.pos.int)," none=",sprintf("%.4f",p.none.int))
-	
+	# init external probas
 	p.neg.ext <- qw * p.neg / p.ext
 	p.pos.ext <- qm * p.pos / p.ext
 	p.none.ext <- 1 - p.pos.ext - p.neg.ext
@@ -188,8 +175,9 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 		rgb(166,86,40,maxColorValue=255),
 		rgb(247,129,191,maxColorValue=255),
 		rgb(153,153,153,maxColorValue=255),
-		rgb(0,0,0,maxColorValue=255)
-	)
+		rgb(0,0,0,maxColorValue=255),
+		rgb(50,50,50,maxColorValue=255)
+)
 	
 	# load each graph and process its stats
 	res <- list()
@@ -250,10 +238,10 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 ###############################################################################
 # Test
 ###############################################################################
-n <- 1000									# number of nodes
-k <- 5										# number of clusters
-dens <- 0.001								# constant density
-prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
-prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
-generate.signed.graphs(n, k, dens, prop.mispls, prop.negs)
-plot.graph.stats(n, k, dens, prop.mispls, prop.negs)
+#n <- 1000									# number of nodes
+#k <- 5										# number of clusters
+#dens <- 0.001								# constant density
+#prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
+#prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
+#generate.signed.graphs(n, k, dens, prop.mispls, prop.negs)
+#plot.graph.stats(n, k, dens, prop.mispls, prop.negs)
