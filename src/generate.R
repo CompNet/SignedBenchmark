@@ -129,14 +129,19 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 			tlog(6,"Generating the graph")
 			g <- generate.signed.graph(n, membership, dens, prop.mispl, prop.neg)
 			
-			# plot the graph
+			# possibly create the output folder
 			folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
-			g <- plot.network(g, membership, plot.file=file.path(folder,"network"), format="PDF")
+			dir.create(folder,showWarnings=FALSE,recursive=TRUE)
+			
+			# plot the graph
+			file.plot <- file.path(folder,"network")
+			tlog(6,"Plotting the graph in file ",file.plot)
+			g <- plot.network(g, membership, plot.file=file.plot, format="PDF")
 			
 			# record the graph
-			tlog(6,"Recording the graph in folder ",folder)
-			dir.create(folder,showWarnings=FALSE,recursive=TRUE)
-			write_graph(graph=g,file=file.path(folder,"network.graphml"),format="graphml")
+			file.graph <- file.path(folder,"network.graphml")
+			tlog(6,"Recording the graph in file ",file.graph)
+			write_graph(graph=g,file=file.graph,format="graphml")
 		}
 	}
 	

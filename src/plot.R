@@ -56,7 +56,9 @@ plot.network <- function(g, membership=NA, plot.file, format=c("PDF","PNG",NA))
 	# process each specified format
 	for(frmt in format)
 	{	# set plot file name
-		plot.filename <- paste0(plot.file,".",frmt)
+		plot.filename <- plot.file
+		if(toupper(substr(plot.filename, nchar(plot.filename)-2, nchar(plot.filename)))!=toupper(frmt))
+			plot.filename <- paste0(plot.filename ,".",frmt)
 		# create the file
 		if(!is.na(frmt))
 		{	if(frmt=="PNG")

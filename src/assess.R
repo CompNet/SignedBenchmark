@@ -40,14 +40,12 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 		# process separately each value for the proportion of misplaced links
 		for(prop.mispl in prop.mispls)
 		{	tlog(4,"Processing prop.mispl=",prop.mispl)
+			folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
 			
 			# read the graph
-			tlog(6,"Reading the graph")
-			folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
-			g <- read.graph(file=file.path(folder,"network.graphml"),format="graphml")
-			
-			# plot the graph and detected partition
-			g <- plot.network(g, membership, plot.file=file.path(folder,"network"), format="PDF")
+			file.graph <- file.path(folder,"network.graphml")
+			tlog(6,"Reading the graph from ",file.graph)
+			g <- read.graph(file=file.graph,format="graphml")
 			
 			# apply the partitioning algorithm
 			tlog(6,"Applying Infomap")
@@ -57,7 +55,14 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 			mbr <- as.vector(membership(res))
 			
 			# record the result
-			write.table(x=mbr,file=file.path(folder,"infomap.txt"),row.names=FALSE,col.names=FALSE)
+			file.part <- file.path(folder,"infomap.txt")
+			tlog(6,"Recording the partition in file ",file.part)
+			write.table(x=mbr,file=file.part,row.names=FALSE,col.names=FALSE)
+			
+			# plot the graph and detected partition
+			file.plot <- file.path(folder,"network")
+			tlog(6,"Plotting the graph in file ",file.plot)
+			g <- plot.network(g, membership, plot.file=file.plot, format="PDF")
 		}
 	}
 	
