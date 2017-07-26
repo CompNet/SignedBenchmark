@@ -60,7 +60,7 @@ apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
 			write.table(x=mbr,file=file.part,row.names=FALSE,col.names=FALSE)
 			
 			# plot the graph and detected partition
-			file.plot <- file.path(folder,"network")
+			file.plot <- file.path(folder,"infomap.pdf")
 			tlog(6,"Plotting the graph in file ",file.plot)
 			g <- plot.network(g, membership, plot.file=file.plot, format="PDF")
 		}
