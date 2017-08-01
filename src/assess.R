@@ -23,8 +23,8 @@ source("src/plot.R")
 # prop.mispls: vector of proportions of misplaced links.
 # prop.negs: vector of proportions of negative links in the network.
 ###############################################################################
-apply.infomap <- function(n, membership, dens, prop.mispl, prop.neg)
-{	tlog(0,"Start to apply InfoMap to the previously generalted collection of signed network")
+apply.infomap <- function(n, k, dens, prop.mispl, prop.neg)
+{	tlog(0,"Start to apply InfoMap to the previously generated collection of signed networks")
 	tlog(2,"Parameters:")
 	tlog(4,"n=",n)
 	tlog(4,"k=",k)
