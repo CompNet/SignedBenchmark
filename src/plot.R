@@ -92,14 +92,14 @@ plot.network <- function(g, membership=NA, plot.file, format=c("PDF","PNG",NA))
 		# create the plot
 		if(ecount(g)>0)
 		{	plot(g, layout=lyt, #main=g$name,
-				vertex.size=vertex.sizes, vertex.label=vertex.label, vertex.color=vertex.colors,
-				edge.color=edge.colors, edge.width=edge.widths
+					vertex.size=vertex.sizes, vertex.label=vertex.label, vertex.color=vertex.colors,
+					edge.color=edge.colors, edge.width=edge.widths
 #				asp=1
 			)
 		}
 		else
 		{	plot(g, layout=lyt,
-				vertex.size=vertex.sizes, vertex.label=vertex.label, vertex.color=vertex.colors,
+					vertex.size=vertex.sizes, vertex.label=vertex.label, vertex.color=vertex.colors,
 			)
 		}
 		title(g$name, cex.main=0.5)

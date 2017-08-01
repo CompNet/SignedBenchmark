@@ -1,3 +1,4 @@
+
 SignedBenchmark v1
 ==================
 *Benchmark to study partitioning problems on signed graphs*
@@ -30,7 +31,17 @@ Here are the folders composing the project:
 1. Install the [`R` language](https://www.r-project.org/)
 2. Install the following R packages:
    * [`igraph`](http://igraph.org/r/): required (tested with version 1.0.1).
+     * first, type in terminal for XML package: sudo apt-get install libxml2-dev
+     * in R, type: install.packages("XML")
+     * then, type in R: install.packages("igraph")
 3. Download this project from GitHub and unzip the archive.
+4. Install IBM Cplex 12.7.1
+   * for ubuntu, type the following command:
+     * sudo ./cplex_studio12.7.1.linux-x86-64.bin 
+       * the default installation location for education version is: /opt/ibm/ILOG/CPLEX_Studio1271 
+       * the default installation location for trial version is:  /opt/ibm/ILOG/CPLEX_Studio_Community127/cplex/bin/x86-64_linux/
+       * If you use trial version or want to change the default installation folder, update the corresponding variable "CPLEX.BIN.PATH" located in "define-consts.R". Otherwise, no need to update it
+5. Install Open Java 1.8 (our ExCC jar file is compiled with that - **TODO**)
 
 
 # Use
@@ -39,7 +50,7 @@ In order to replicate the experiments from the article, perform the following op
 1. Open the `R` console.
 2. Set the current projetct directory as the working directory, using `setwd("my/path/to/the/project/SignedBenchmark")`.
 3. Run `src/main.R`
-  
+
 
 # Extension
 
@@ -49,7 +60,9 @@ In order to replicate the experiments from the article, perform the following op
 
 
 # To-do List
-* N/A
+* generate plots of the raw graphs, and of the detected partitions as well (use the script from netvotes)
+* ExCC is too slow. Try improving the actual code source. (Ask Zacarie for lazy constraint)
+* Record execution times for both partitioning methods once we improved ExCC
 
 
 # References

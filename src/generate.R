@@ -14,6 +14,7 @@
 ###############################################################################
 library("igraph")
 
+source("src/define-consts.R")
 source("src/common.R")
 source("src/file.R")
 source("src/plot.R")
@@ -41,30 +42,51 @@ generate.signed.graph <- function(n, membership, dens, prop.mispl, prop.neg)
 	p.neg <- prop.neg * dens
 	p.pos <- dens - p.neg
 	tlog(8,"p.neg=",p.neg," p.pos=",p.pos," (total=",p.neg+p.pos,")")
-	# init position probas
+	# init position probas: (as if we were using a COMPLETE GRAPH
 	p.int <- sum(sapply(1:max(membership), function(c)
-		{	n <- length(which(membership==c))
-			n*(n-1)/2
-		})) / (n*(n-1)/2)
+					{	n <- length(which(membership==c))
+						# Nejat: every node inside a cluster has n-1 links towards the other nodes inside the same cluster
+						# Nejat: so, compute the total link inside a cluster for every n node: n*(n-1)
+						# Nejat: divide by 2 because the graph is undirected 
+						n*(n-1)/2
+					})) / (n*(n-1)/2) # butun node'lar tek takilsa yani her biri bi cluster diye
 	p.ext <- sum(apply(t(combn(x=max(membership),m=2,simplify=TRUE)), 1, function(r)
-		{	n1 <- length(which(membership==r[1]))
-			n2 <- length(which(membership==r[2]))
-			n1 * n2
-		})) / (n*(n-1)/2)
+					{	n1 <- length(which(membership==r[1]))
+						n2 <- length(which(membership==r[2]))
+						# total links between the nodes of 2 different clusters
+						n1 * n2
+					})) / (n*(n-1)/2) # butun node'lar tek takilsa yani her biri bi cluster diye
 	tlog(8,"p.int=",p.int," p.ext=",p.ext," (total=",p.int+p.ext,")")
 	# init internal probas
+	# Nejat: p.int + p.ext = 1
+	# p.int: probability of being a link inside a cluster, p.ext:probability of being a link between clusters
+	# Nejat: Why we need p.int and p.ext?
+	# Nejat: Because: if p.ext is larger than p.int,
+	#        so we need to balance this diff in order not to have frequently misplaced links between clusters
+	# Nejat: For instance p.int: 0.25 and p.ext:0.75 ==> 3 times larger 
 	p.neg.int <- qm * p.neg / p.int
 	p.pos.int <- qw * p.pos / p.int
-	p.none.int <- 1 - p.pos.int - p.neg.int
+	p.none.int <- 1 - p.pos.int - p.neg.int # density 1 olmadigi icin 
 	tlog(8,"Internal probas: neg=",sprintf("%.4f",p.neg.int)," pos=",sprintf("%.4f",p.pos.int)," none=",sprintf("%.4f",p.none.int))
 	# init external probas
 	p.neg.ext <- qw * p.neg / p.ext
 	p.pos.ext <- qm * p.pos / p.ext
-	p.none.ext <- 1 - p.pos.ext - p.neg.ext
+	p.none.ext <- 1 - p.pos.ext - p.neg.ext # density 1 olmadigi icin 
 	tlog(8,"External probas: neg=",sprintf("%.4f",p.neg.ext)," pos=",sprintf("%.4f",p.pos.ext)," none=",sprintf("%.4f",p.none.ext))
 	
 	# draw links
 	el <- t(combn(x=n, m=2, simplify=TRUE))
+	# An example:
+	# t(combn(x=4, m=2, simplify=TRUE))
+	#     [,1] [,2]
+	#[1,]    1    2
+	#[2,]    1    3
+	#[3,]    1    4
+	#[4,]    2    3
+	#[5,]    2    4
+	#[6,]    3    4
+	# suppose that membershp is like that: membership = c(1, 1, 2, 2)
+	# comembership would be like tha: TRUE FALSE FALSE FALSE FALSE  TRUE
 	comembership <- sapply(1:nrow(el),function(r) membership[el[r,1]]==membership[el[r,2]])
 	norm.int <- length(which(comembership))
 	norm.ext <- length(which(!comembership))
@@ -142,6 +164,10 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 			file.graph <- file.path(folder,"network.graphml")
 			tlog(6,"Recording the graph in file ",file.graph)
 			write_graph(graph=g,file=file.graph,format="graphml")
+			
+			# record also the Mario's graph file which is needed for ExCC
+			signed.g.file.path = file.path(folder,"signed.G")
+			convert.graphml.into.mario.graph(g, signed.g.file.path)
 		}
 	}
 	
