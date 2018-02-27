@@ -38,5 +38,4 @@ plot.algo.stats(n, k, dens, prop.mispls, prop.negs)
 
 ###############################################################################
 # TODO
-# - layout through kunegis' method (or another laplacian)
 ###############################################################################

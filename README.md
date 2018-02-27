@@ -30,6 +30,7 @@ Here are the folders composing the project:
 1. Install the [`R` language](https://www.r-project.org/)
 2. Install the following R packages:
    * [`igraph`](http://igraph.org/r/): required (tested with version 1.0.1).
+   * [`expm`](https://cran.r-project.org/web/packages/expm/index.html): required for certain signed graph layouts (tested with version 	0.999-2).
 3. Download this project from GitHub and unzip the archive.
 
 
@@ -46,6 +47,7 @@ In order to replicate the experiments from the article, perform the following op
 
 # Dependencies
 * [`igraph`](http://igraph.org/r/) package: used to build and handle graphs.
+* [`expm`](https://cran.r-project.org/web/packages/expm/index.html) package: power of matrices.
 
 
 # To-do List
