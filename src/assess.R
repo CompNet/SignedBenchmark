@@ -45,24 +45,28 @@ apply.infomap <- function(n, k, dens, prop.mispl, prop.neg)
 			# read the graph
 			file.graph <- file.path(folder,"network.graphml")
 			tlog(6,"Reading the graph from ",file.graph)
-			g <- read.graph(file=file.graph,format="graphml")
-			
-			# apply the partitioning algorithm
-			tlog(6,"Applying Infomap")
-			idx <- which(E(g)$weight<0)
-			g <- delete_edges(graph=g, edges=idx)
-			res <- infomap.community(graph=g,e.weights=NULL)
-			mbr <- as.vector(membership(res))
-			
-			# record the result
-			file.part <- file.path(folder,"infomap.txt")
-			tlog(6,"Recording the partition in file ",file.part)
-			write.table(x=mbr,file=file.part,row.names=FALSE,col.names=FALSE)
-			
-			# plot the graph and detected partition
-			file.plot <- file.path(folder,"infomap.pdf")
-			tlog(6,"Plotting the graph in file ",file.plot)
-			g <- plot.network(g, membership, plot.file=file.plot, format="PDF")
+			if(!file.exists(file.graph))
+				tlog(2,"WARNING: Could not find graph file ",file.graph,", probably couldn't be generated due to some parameter problem.")
+			else
+			{	g <- read.graph(file=file.graph,format="graphml")
+				
+				# apply the partitioning algorithm
+				tlog(6,"Applying Infomap")
+				idx <- which(E(g)$weight<0)
+				g <- delete_edges(graph=g, edges=idx)
+				res <- infomap.community(graph=g,e.weights=NULL)
+				mbr <- as.vector(membership(res))
+				
+				# record the result
+				file.part <- file.path(folder,"infomap.txt")
+				tlog(6,"Recording the partition in file ",file.part)
+				write.table(x=mbr,file=file.part,row.names=FALSE,col.names=FALSE)
+				
+				# plot the graph and detected partition
+				file.plot <- file.path(folder,"infomap.pdf")
+				tlog(6,"Plotting the graph in file ",file.plot)
+				g <- plot.network(g, membership, plot.file=file.plot, format="PDF")
+			}
 		}
 	}
 	
@@ -83,7 +87,9 @@ apply.infomap <- function(n, k, dens, prop.mispl, prop.neg)
 # prop.negs: vector of proportions of negative links in the network.
 ###############################################################################
 plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
-{	CODE_IMBALANCE <- "Imbalance (proportion of misplaced links)"
+{	tlog(0,"Start to compute the algorithm statistics")
+	
+	CODE_IMBALANCE <- "Imbalance (proportion of misplaced links)"
 	CODE_NMI <- "Normalized Mutual Information"
 	CODES <- c(CODE_IMBALANCE, CODE_NMI)
 	FILE_NAMES <- c()
@@ -98,47 +104,55 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 	for(i in 1:length(prop.mispls))
 	{	for(j in 1:length(prop.negs))
 		{	folder <- get.folder.path(n, k, dens, prop.mispls[i], prop.negs[j])
-			g <- read.graph(file=file.path(folder,"network.graphml"),format="graphml")
-			im.membership <- as.matrix(read.table(file=file.path(folder,"infomap.txt")))
-			el <- get.edgelist(graph=g,names=FALSE)
-			comembership <- sapply(1:nrow(el),function(r) im.membership[el[r,1]]==im.membership[el[r,2]])
-			res[[CODE_IMBALANCE]][i,j] <- length(which((!comembership & E(g)$weight>0) | (comembership & E(g)$weight<0))) / ecount(g)
-			res[[CODE_NMI]][i,j] <- compare(gt.membership,im.membership,method="nmi")
+			file <- file.path(folder,"network.graphml")
+			if(!file.exists(file))
+				tlog(2,"WARNING: Could not find graph file ",file,", probably couldn't be generated due to some parameter problem.")
+			else
+			{	g <- read.graph(file=file,format="graphml")
+				im.membership <- as.matrix(read.table(file=file.path(folder,"infomap.txt")))
+				el <- get.edgelist(graph=g,names=FALSE)
+				comembership <- sapply(1:nrow(el),function(r) im.membership[el[r,1]]==im.membership[el[r,2]])
+				res[[CODE_IMBALANCE]][i,j] <- length(which((!comembership & E(g)$weight>0) | (comembership & E(g)$weight<0))) / ecount(g)
+				res[[CODE_NMI]][i,j] <- compare(gt.membership,im.membership,method="nmi")
+			}
 		}
 	}
 	
 	# generate the plots
 	for(code in CODES)
 	{	data <- res[[code]]
-		
-		# function of the proportion of misplaced links
-		plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
-		pdf(file=plot.file,bg="white")
-		plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
-				ylim=c(min(data),max(data)), 
-				xlab="Desired proportion of misplaced links", ylab=code)
-		cc <- 1
-		for(j in 1:length(prop.negs))
-		{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
-			cc <- cc + 1
+		if(!all(is.na(data)))
+		{	# function of the proportion of misplaced links
+			plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
+			pdf(file=plot.file,bg="white")
+			plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
+					ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)), 
+					xlab="Desired proportion of misplaced links", ylab=code)
+			cc <- 1
+			for(j in 1:length(prop.negs))
+			{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
+				cc <- cc + 1
+			}
+			legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
+			dev.off()
+			
+			# function of the proportion of negative links
+			cc <- 1
+			plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
+			pdf(file=plot.file,bg="white")
+			plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
+					ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)), 
+					xlab="Desired proportion of negative links", ylab=code)
+			for(i in 1:length(prop.mispls))
+			{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
+				cc <- cc + 1
+			}
+			legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
+			dev.off()
 		}
-		legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
-		dev.off()
-		
-		# function of the proportion of negative links
-		cc <- 1
-		plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
-		pdf(file=plot.file,bg="white")
-		plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
-				ylim=c(min(data),max(data)), 
-				xlab="Desired proportion of negative links", ylab=code)
-		for(i in 1:length(prop.mispls))
-		{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
-			cc <- cc + 1
-		}
-		legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
-		dev.off()
 	}
+	
+	tlog(0,"Computing of the algorithm statistics over")
 }	
 
 
