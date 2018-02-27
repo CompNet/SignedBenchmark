@@ -115,7 +115,7 @@ generate.signed.graph <- function(membership, dens, prop.mispl, prop.neg)
 # prop.negs: vector of proportions of negative links in the network.
 ###############################################################################
 generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
-{	tlog(0,"Start to generate the collection of signed network")
+{	tlog(0,"Start to generate the collection of signed networks")
 	tlog(2,"Parameters:")
 	tlog(4,"n=",n)
 	tlog(4,"k=",k)
@@ -260,7 +260,7 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 			tlog(2,"WARNING: nothing to plot (no data)")
 	}
 
-	tlog(0,"Computing of the graph statistics over")
+	tlog(0,"Computation of the graph statistics over")
 }	
 
 
@@ -276,3 +276,21 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 #prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
 #generate.signed.graphs(n, k, dens, prop.mispls, prop.negs)
 #plot.graph.stats(n, k, dens, prop.mispls, prop.negs)
+
+#n <- 25
+#k <- 5
+#membership <- rep(1:k,each=n%/%k)
+#dens <- 0.1
+#prop.mispl <- 0.1
+#prop.neg <- 0.3
+#g <- generate.signed.graph(membership, dens, prop.mispl, prop.neg)
+#plot.network(g, membership, plot.file="sqdffsd", format=NA, method="bn_zheng")
+
+#n <- 30
+#k <- 3
+#membership <- rep(1:k,each=n%/%k)
+#dens <- 0.2
+#prop.mispl <- 0.1
+#prop.neg <- 0.3
+#g <- generate.signed.graph(membership, dens, prop.mispl, prop.neg)
+#plot.network(g, membership, plot.file="sqdffsd", format=NA, method="bn_zheng")

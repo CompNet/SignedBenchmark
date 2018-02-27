@@ -74,6 +74,9 @@ layout.signed.laplacian <- function(g, method="bn_zheng")
 	diag(Sm) <- apply(Wm, 1, sum)
 	# total strength matrix
 	S <- Sp + Sm
+	# its inverse matrix
+	Si <- S
+	diag(Si) <- 1/diag(Si)
 	
 	# process the laplacian
 	if(method=="kunegis")
@@ -81,24 +84,27 @@ layout.signed.laplacian <- function(g, method="bn_zheng")
 		L <- S - W
 	else if(method=="rw_kunegis")
 		# random walk normalized signed Laplacian
-		L <- diag(ncol(W)) - solve(S) %*% W
+		L <- diag(ncol(W)) - Si %*% W
 	else if(method=="sn_kunegis")
 		# symmetric normalized signed laplacian
 		L <- diag(ncol(W)) - S %^% (-1/2) %*% W %*% S %^% (-1/2)
 	else if(method=="sn_zheng")
 		# simple normalized signed Laplacian
-		L <- solve(S) %*% (Sp - W)
+		L <- Si %*% (Sp - W)
 	else if(method=="bn_zheng")
-		# balanced normalized signed Laplacian 
-		L <- solve(S) %*% (Sp - Sm - W)
+		# balanced normalized signed Laplacian
+		L <- Si %*% (Sp - Sm - W)
 	else
 		stop("Could not recognize the specified method '",method,"'")
+	
+	# use zeros for isolates  
+	L[which(is.nan(L))] <- 0
 	
 	# take its first two Eigenvectors
 	ev <- eigen(L, symmetric=TRUE)$vec
 	lay <- ev[,1:2]
 #	lay <- t(ev[1:2,])
-	print(lay)
+#	print(lay)
 	
 	return(lay)
 }
