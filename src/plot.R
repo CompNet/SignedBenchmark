@@ -74,7 +74,7 @@ layout.signed.laplacian <- function(g, method="bn_zheng")
 	diag(Sm) <- apply(Wm, 1, sum)
 	# total strength matrix
 	S <- Sp + Sm
-	# its inverse matrix
+	# its inverse matrix (simple since it's a diagonal matrix)
 	Si <- S
 	diag(Si) <- 1/diag(Si)
 	
@@ -97,7 +97,7 @@ layout.signed.laplacian <- function(g, method="bn_zheng")
 	else
 		stop("Could not recognize the specified method '",method,"'")
 	
-	# use zeros for isolates  
+	# use zeros for isolates (division by zero on the diagonal of S)
 	L[which(is.nan(L))] <- 0
 	
 	# take its first two Eigenvectors
