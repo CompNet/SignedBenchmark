@@ -1,11 +1,10 @@
 ###############################################################################
 # Functions used to randomly generate the signed graphs. They are based on
 # a generalization of the simple model described in:
-#
-# M. Girvan & M. E. J. Newman
-# Community structure in social and biological networks 
-# Proceedings of the National Academy of Sciences, 2002, 99(12):7821-7826
-# DOI:10.1073/pnas.122653799
+# 		Community structure in social and biological networks 
+# 		M. Girvan & M. E. J. Newman
+# 		Proceedings of the National Academy of Sciences, 2002, 99(12):7821-7826
+#		DOI:10.1073/pnas.122653799
 #  
 # See the article for a description of how we generalized the model to
 # signed networks.
@@ -54,11 +53,26 @@ generate.signed.graph <- function(membership, dens, prop.mispl, prop.neg)
 		})) / (n*(n-1)/2)
 	tlog(8,"p.int=",p.int," p.ext=",p.ext," (total=",p.int+p.ext,")")
 	# check prop.neg interval
-	lower.bound <- max(0, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
-	upper.bound <- min(1, (p.ext - dens*qm) / (dens*(1-2*qm)))
-	tlog(8,"prop.neg (",sprintf("%.4f",prop.neg),") bounds: [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
-	if(prop.neg<lower.bound | prop.neg>upper.bound)
-		stop("Parameter prop.neg (",sprintf("%.4f",prop.neg),") must be in [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
+	if(prop.mispl==0.5)
+	{	tlog(8,"prop.neg (",sprintf("%.4f",prop.neg),")")
+		upper.bound <- 2 * min(p.ext, p.int)
+		tlog(8,"density upper bound bound: ",sprintf("%.4f",upper.bound))
+		if(dens>upper.bound)
+			stop("Parameter dens (",sprintf("%.4f",dens),") must be smaller or equal to ",sprintf("%.4f",upper.bound))
+	}
+	else
+	{	if(prop.mispl<0.5)
+		{	lower.bound <- max(0, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
+			upper.bound <- min(1, (p.ext - dens*qm) / (dens*(1-2*qm)))
+		}
+		else if(prop.mispl>0.5)
+		{	lower.bound <- max(0, (p.ext - dens*qm) / (dens*(1-2*qm)))
+			upper.bound <- min(1, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
+		}
+		tlog(8,"prop.neg (",sprintf("%.4f",prop.neg),") bounds: [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
+		if(prop.neg<lower.bound | prop.neg>upper.bound)
+			stop("Parameter prop.neg (",sprintf("%.4f",prop.neg),") must be in [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
+	}
 	# init internal probas
 	p.neg.int <- qm * p.neg / p.int
 	p.pos.int <- qw * p.pos / p.int
@@ -161,9 +175,22 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 					n2 <- length(which(membership==r[2]))
 					n1 * n2
 				})) / (n*(n-1)/2)
-				lower.bound <- max(0, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
-				upper.bound <- min(1, (p.ext - dens*qm) / (dens*(1-2*qm)))
-				tlog(6,"Could not generate the graph: the prop.neg parameter (",prop.neg,") is out of range [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
+				
+				if(qm==0.5)
+				{	upper.bound <- 2 * min(p.ext, 1 - p.ext)
+					tlog(8,"Could not generate the graph: the dens parameter (",sprintf("%.4f",dens),") is greater than ",sprintf("%.4f",upper.bound))
+				}
+				else
+				{	if(qm<0.5)
+					{	lower.bound <- max(0, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
+						upper.bound <- min(1, (p.ext - dens*qm) / (dens*(1-2*qm)))
+					}
+					else
+					{	lower.bound <- max(0, (p.ext - dens*qm) / (dens*(1-2*qm)))
+						upper.bound <- min(1, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
+					}
+					tlog(6,"Could not generate the graph: the prop.neg parameter (",sprintf("%.4f",prop.neg),") is out of range [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
+				}
 			}
 		}
 	}
