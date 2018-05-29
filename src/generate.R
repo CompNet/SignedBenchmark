@@ -21,9 +21,59 @@ source("src/plot.R")
 
 
 ###############################################################################
-# Builds a signed graph according to the specified parameters.
+# Builds a complete signed graph according to the specified parameters.
 #
-# n: number of nodes in the graph.
+# membership: integer vector, each value represents the cluster containing the corresponding node.
+# prop.mispl: proportion of misplaced links (among existing links).
+#
+# returns: a signed graph randomly generated according to the specified parameters.
+###############################################################################
+generate.complete.signed.graph <- function(membership, prop.mispl)
+{	n <- length(membership)
+	m <- n*(n-1)/2
+	
+	# generate links and weights
+	weights <- rep(NA, m)
+	el <- matrix(NA, nrow=m, ncol=2)
+	r <- 1
+	for(i in 1:(n-1))
+	{	for(j in (i+1):n)
+		{	el[r,] <- c(i,j)
+			if(membership[i]==membership[j])
+				weights[r] <- 1
+			else
+				weights[r] <- -1
+			r <- r + 1
+		}
+	}
+	
+	# check parameters
+	half.misp <- floor(m*prop.mispl/2)
+	idx.p <- which(weights>0)
+	idx.n <- which(weights<0)
+	upper.bound <- min(length(idx.p), length(idx.n)) / m
+	if(prop.mispl>upper.bound)
+		stop("Parameter prop.mispl (",sprintf("%.4f",prop.mispl),") must be smaller or equal to ",sprintf("%.4f",upper.bound))
+	
+	# set the misplaced links
+	idx.misp.p <- sample(x=idx.p, size=half.misp, replace=FALSE)
+	idx.misp.n <- sample(x=idx.n, size=half.misp, replace=FALSE)
+	idx.misp <- c(idx.misp.p, idx.misp.n)
+	weights[idx.misp] <- -weights[idx.misp]
+	
+	# build graph
+	g <- make_empty_graph(n,directed=FALSE)
+	g <- add_edges(graph=g, edges=c(t(el)), attr=list(weight=weights))
+	
+	return(g)
+}
+
+
+
+
+###############################################################################
+# Builds an incomplete signed graph according to the specified parameters.
+#
 # membership: integer vector, each value represents the cluster containing the corresponding node.
 # dens: density of the graph.
 # prop.mispl: proportion of misplaced links (among existing links).
@@ -31,7 +81,7 @@ source("src/plot.R")
 #
 # returns: a signed graph randomly generated according to the specified parameters.
 ###############################################################################
-generate.signed.graph <- function(membership, dens, prop.mispl, prop.neg)
+generate.incomplete.signed.graph <- function(membership, dens, prop.mispl, prop.neg)
 {	# init proportions
 	n <- length(membership)
 	qm <- prop.mispl
@@ -148,10 +198,13 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 			
 			# generate the graph
 			tlog(6,"Generating the graph")
-			g <- tryCatch(
-					generate.signed.graph(membership, dens, prop.mispl, prop.neg),
+			if(dens<1)
+				g <- tryCatch(
+					generate.incomplete.signed.graph(membership, dens, prop.mispl, prop.neg),
 					error=function(e) NA
-			)
+				)
+			else
+				g <- generate.complete.signed.graph(membership, prop.mispl)
 			
 			if(!all(is.na(g)))
 			{	# possibly create the output folder
@@ -310,7 +363,7 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 #dens <- 0.1
 #prop.mispl <- 0.1
 #prop.neg <- 0.3
-#g <- generate.signed.graph(membership, dens, prop.mispl, prop.neg)
+#g <- generate.incomplete.signed.graph(membership, dens, prop.mispl, prop.neg)
 #plot.network(g, membership, plot.file="sqdffsd", format=NA, method="bn_zheng")
 
 #n <- 30
@@ -319,5 +372,20 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 #dens <- 0.2
 #prop.mispl <- 0.1
 #prop.neg <- 0.3
-#g <- generate.signed.graph(membership, dens, prop.mispl, prop.neg)
+#g <- generate.incomplete.signed.graph(membership, dens, prop.mispl, prop.neg)
 #plot.network(g, membership, plot.file="sqdffsd", format=NA, method="bn_zheng")
+
+#n <- 30
+#k <- 2
+#membership <- rep(1:k,each=n%/%k)
+#dens <- 1
+#prop.mispl <- 0.1
+#g <- generate.complete.signed.graph(membership, prop.mispl)
+#plot.network(g, membership, plot.file="sqdffsd", format=NA, method="fruchterman.reingold")
+
+n <- 1000									# number of nodes
+k <- 5										# number of clusters
+dens <- 1									# constant density
+prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
+generate.signed.graphs(n, k, dens, prop.mispls, prop.negs=c())
+plot.graph.stats(n, k, dens, prop.mispls, prop.negs=c())

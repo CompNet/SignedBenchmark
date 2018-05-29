@@ -117,7 +117,8 @@ layout.signed.laplacian <- function(g, method="bn_zheng")
 # g: signed graph to plot.
 # plot.file: base name (and path) of the generated files.
 # format: format(s) to handle (among "PDF", "PNG", and NA for screen).
-# method: layout used (signed graphs).
+# method: layout used. One supported by layout.signed.laplacian, or one for 
+#		  unsigned graphs, such as kamada.kawai, fruchterman.reingold.
 #
 # returns: the same graph, with the spatial positions stored as nodal attributes x and y.
 #############################################################################################
@@ -146,12 +147,19 @@ plot.network <- function(g, membership=NA, plot.file, format=c("PDF","PNG",NA), 
 	v.att <- list.vertex.attributes(graph=g)
 	if(!("x" %in% v.att) | !("y" %in% v.att)) 
 	{	# layouts for unsigned graphs
-		gpos <- delete.edges(graph=g,edges=which(E(g)$weight<0))
-##		lyt <- layout.kamada.kawai(graph=gpos)
-#		lyt <- layout.fruchterman.reingold(graph=gpos)
-##		lyt <- layout.circle(graph=gpos)
+		if(method=="kamada.kawai")
+		{	gpos <- delete.edges(graph=g,edges=which(E(g)$weight<0))
+			lyt <- layout.kamada.kawai(graph=gpos)
+		}
+		else if(method=="fruchterman.reingold")
+		{	gpos <- delete.edges(graph=g,edges=which(E(g)$weight<0))
+			lyt <- layout.fruchterman.reingold(graph=gpos)
+		}
+##			lyt <- layout.circle(graph=gpos)
 		# layouts for signed graphs
-		lyt <- layout.signed.laplacian(g, method)
+		else
+		{	lyt <- layout.signed.laplacian(g, method)
+		}
 		# store spatial positions as nodal attributes
 		V(g)$x <- lyt[,1]
 		V(g)$y <- lyt[,2]
