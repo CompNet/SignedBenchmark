@@ -176,10 +176,13 @@ generate.incomplete.signed.graph <- function(membership, dens, prop.mispl, prop.
 # k: number of clusters in the graph.
 # dens: total density of the graph (counting both negative and positive links).
 # prop.mispls: vector of proportions of misplaced links.
-# prop.negs: vector of proportions of negative links in the network.
+# prop.negs: vector of proportions of negative links in the network (ignored if
+#			 the density is 1).
 ###############################################################################
-generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
-{	tlog(0,"Start to generate the collection of signed networks")
+generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
+{	if(dens==1)
+			prop.negs <- NA
+	tlog(0,"Start to generate the collection of signed networks")
 	tlog(2,"Parameters:")
 	tlog(4,"n=",n)
 	tlog(4,"k=",k)
@@ -204,7 +207,10 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 					error=function(e) NA
 				)
 			else
-				g <- generate.complete.signed.graph(membership, prop.mispl)
+				g <- tryCatch(
+						generate.complete.signed.graph(membership, prop.mispl),
+						error=function(e) NA
+				)
 			
 			if(!all(is.na(g)))
 			{	# possibly create the output folder
@@ -214,7 +220,7 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 				# plot the graph
 				file.plot <- file.path(folder,"network")
 				tlog(6,"Plotting the graph in file ",file.plot)
-				g <- plot.network(g, membership, plot.file=file.plot, format="PDF")
+				g <- plot.network(g, membership, plot.file=file.plot, format="PDF", method="fruchterman.reingold")
 				
 				# record the graph
 				file.graph <- file.path(folder,"network.graphml")
@@ -261,10 +267,13 @@ generate.signed.graphs <- function(n, k, dens, prop.mispls, prop.negs)
 # k: number of clusters in the graph.
 # dens: total density of the graph (counting both negative and positive links).
 # prop.mispls: vector of proportions of misplaced links.
-# prop.negs: vector of proportions of negative links in the network.
+# prop.negs: vector of proportions of negative links in the network (ignored if
+#			 the density is 1, i.e. we want to generate complete graphs).
 ###############################################################################
-plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
-{	tlog(0,"Start to compute the graph statistics")
+plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
+{	if(dens==1)
+		prop.negs <- NA
+	tlog(0,"Start to compute the graph statistics")
 	
 	CODE_DENSITY <- "Density"
 	CODE_PROP_NEG <- "Observed proportion of negative links"
@@ -311,30 +320,32 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 			dir.create(path=folder, showWarnings=FALSE, recursive=TRUE)
 			plot.file <- file.path(folder, paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
 			pdf(file=plot.file,bg="white")
-			plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
-					ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
-					xlab="Desired proportion of misplaced links", ylab=code)
-			cc <- 1
-			for(j in 1:length(prop.negs))
-			{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
-				cc <- cc + 1
-			}
-			legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
+				plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
+						ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
+						xlab="Desired proportion of misplaced links", ylab=code)
+				cc <- 1
+				for(j in 1:length(prop.negs))
+				{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
+					cc <- cc + 1
+				}
+				legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
 			dev.off()
 			
 			# function of the proportion of negative links
-			cc <- 1
-			plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
-			pdf(file=plot.file,bg="white")
-			plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
-					ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
-					xlab="Desired proportion of negative links", ylab=code)
-			for(i in 1:length(prop.mispls))
-			{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
-				cc <- cc + 1
+			if(!all(is.na(prop.negs)))
+			{	cc <- 1
+				plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
+				pdf(file=plot.file,bg="white")
+					plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
+						ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
+						xlab="Desired proportion of negative links", ylab=code)
+					for(i in 1:length(prop.mispls))
+					{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
+						cc <- cc + 1
+					}
+					legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
+				dev.off()
 			}
-			legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
-			dev.off()
 		}
 		else
 			tlog(2,"WARNING: nothing to plot (no data)")
@@ -383,9 +394,9 @@ plot.graph.stats <- function(n, k, dens, prop.mispls, prop.negs)
 #g <- generate.complete.signed.graph(membership, prop.mispl)
 #plot.network(g, membership, plot.file="sqdffsd", format=NA, method="fruchterman.reingold")
 
-n <- 1000									# number of nodes
-k <- 5										# number of clusters
-dens <- 1									# constant density
-prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
-generate.signed.graphs(n, k, dens, prop.mispls, prop.negs=c())
-plot.graph.stats(n, k, dens, prop.mispls, prop.negs=c())
+#n <- 100									# number of nodes
+#k <- 3										# number of clusters
+#dens <- 1									# constant density
+#prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
+#generate.signed.graphs(n, k, dens, prop.mispls, prop.negs=NA)
+#plot.graph.stats(n, k, dens, prop.mispls, prop.negs=NA)

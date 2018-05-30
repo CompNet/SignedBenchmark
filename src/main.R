@@ -13,11 +13,11 @@ source("src/generate.R")
 
 
 # set up the parameters
-n <- 1000									# number of nodes
-k <- 5										# number of (same-sized) clusters
-dens <- 0.001								# constant density
+n <- 100									# number of nodes
+k <- 3			#5							# number of (same-sized) clusters
+dens <- 1		#0.001						# constant density
 prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
-prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links
+prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links (ignored if the graph is complete)
 
 
 

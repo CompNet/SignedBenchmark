@@ -21,10 +21,13 @@ source("src/plot.R")
 # k: number of clusters in the graph.
 # dens: total density of the graph (counting both negative and positive links).
 # prop.mispls: vector of proportions of misplaced links.
-# prop.negs: vector of proportions of negative links in the network.
+# prop.negs: vector of proportions of negative links in the network (ignored if
+#			 the graphs are complete).
 ###############################################################################
 apply.infomap <- function(n, k, dens, prop.mispl, prop.neg)
-{	tlog(0,"Start to apply InfoMap to the previously generated collection of signed networks")
+{	if(dens==1)
+		prop.negs <- NA
+	tlog(0,"Start to apply InfoMap to the previously generated collection of signed networks")
 	tlog(2,"Parameters:")
 	tlog(4,"n=",n)
 	tlog(4,"k=",k)
@@ -84,10 +87,13 @@ apply.infomap <- function(n, k, dens, prop.mispl, prop.neg)
 # k: number of clusters in the graph.
 # dens: total density of the graph (counting both negative and positive links).
 # prop.mispls: vector of proportions of misplaced links.
-# prop.negs: vector of proportions of negative links in the network.
+# prop.negs: vector of proportions of negative links in the network (ignored if
+#			 the graphs are complete).
 ###############################################################################
 plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
-{	tlog(0,"Start to compute the algorithm statistics")
+{	if(dens==1)
+			prop.negs <- NA
+	tlog(0,"Start to compute the algorithm statistics")
 	
 	CODE_IMBALANCE <- "Imbalance (proportion of misplaced links)"
 	CODE_NMI <- "Normalized Mutual Information"
@@ -125,30 +131,32 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs)
 		{	# function of the proportion of misplaced links
 			plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
 			pdf(file=plot.file,bg="white")
-			plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
-					ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)), 
-					xlab="Desired proportion of misplaced links", ylab=code)
-			cc <- 1
-			for(j in 1:length(prop.negs))
-			{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
-				cc <- cc + 1
-			}
-			legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
+				plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
+						ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)), 
+						xlab="Desired proportion of misplaced links", ylab=code)
+				cc <- 1
+				for(j in 1:length(prop.negs))
+				{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
+					cc <- cc + 1
+				}
+				legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
 			dev.off()
 			
 			# function of the proportion of negative links
-			cc <- 1
-			plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
-			pdf(file=plot.file,bg="white")
-			plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
-					ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)), 
-					xlab="Desired proportion of negative links", ylab=code)
-			for(i in 1:length(prop.mispls))
-			{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
-				cc <- cc + 1
+			if(!all(is.na(prop.negs)))
+			{	cc <- 1
+				plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
+				pdf(file=plot.file,bg="white")
+					plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
+							ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)), 
+							xlab="Desired proportion of negative links", ylab=code)
+					for(i in 1:length(prop.mispls))
+					{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
+						cc <- cc + 1
+					}
+					legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
+				dev.off()
 			}
-			legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
-			dev.off()
 		}
 	}
 	

@@ -22,10 +22,12 @@ OUT_FOLDER <- "out"
 #
 # returns: the folder path defined to store the network and the associated result files.
 ###############################################################################
-get.folder.path <- function(n, k, dens=NA, prop.mispl=NA, prop.neg=NA)
-{	result <- file.path(OUT_FOLDER, paste0(paste0("n=",n), paste0("_k=",k)))
-	if(!is.na(dens))
-		result <- file.path(result, paste0("_dens=",sprintf("%.4f",dens)))
+get.folder.path <- function(n, k, dens=1, prop.mispl=NA, prop.neg=NA)
+{	result <- file.path(OUT_FOLDER, paste0(
+					paste0("n=",n), 
+					paste0("_k=",k), 
+					paste0("_dens=",sprintf("%.4f",dens)
+				)))
 	if(!is.na(prop.mispl))
 		result <- file.path(result, paste0("propMispl=",sprintf("%.4f",prop.mispl)))
 	if(!is.na(prop.neg))
