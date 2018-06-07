@@ -6,12 +6,6 @@ library("igraph")
 
 
 
-OUT.FOLDER <- "out"
-NETWORKS.FOLDER <- file.path(OUT.FOLDER, "networks")
-PLOTS.FOLDER <- file.path(OUT.FOLDER, "plots")
-
-
-
 
 ###############################################################################
 # Builds the path of a subfolder corresponding to one specific parameter set.

@@ -221,10 +221,10 @@ generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA, netw
 					folder <- get.network.folder.path(n, k, dens, prop.mispl, prop.neg, network.no)
 					dir.create(folder,showWarnings=FALSE,recursive=TRUE)
 					
-#					# plot the graph
-#					file.plot <- file.path(folder,"network")
-#					tlog(6,"Plotting the graph in file ",file.plot)
-#					g <- plot.network(g, membership, plot.file=file.plot, format="PDF", method="fruchterman.reingold")
+					# plot the graph
+					file.plot <- file.path(folder,GRAPH.FILENAME)
+					tlog(6,"Plotting the graph in file ",file.plot)
+					g <- plot.network(g, membership, plot.file=file.plot, format="PDF", method="fruchterman.reingold")
 					
 					# record the graph
 					file.graph <- file.path(folder,paste0(GRAPH.FILENAME,".graphml"))

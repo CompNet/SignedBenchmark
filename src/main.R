@@ -4,24 +4,35 @@
 # 
 # Author: Vincent Labatut 07/2017
 ###############################################################################
-library("igraph")
 
-source("src/assess.R")
-source("src/generate.R")
-
+# ----------------------------------------------------
 # CONSTANTS
 GRAPH.FILENAME = "signed-unweighted"
 
+OUT.FOLDER <- "out"
+NETWORKS.FOLDER <- file.path(OUT.FOLDER, "networks")
+PLOTS.FOLDER <- file.path(OUT.FOLDER, "plots")
+LIB.FOLDER <- "lib"
+# ----------------------------------------------------
+
+library("igraph")
+
+source("src/define-algos.R")
+source("src/assess.R")
+source("src/generate.R")
+
+
+
 # set up the parameters
-#n <- 60						# number of nodes
-k <- 2						# number of (same-sized) clusters
-dens <- 1				# constant density
+#n <- 60									# number of nodes
+k <- 2										# number of (same-sized) clusters
+dens <- 1									# constant density
 prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
 prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links (ignored if the graph is complete)
 
 	
 graph.sizes = seq(from=12, to=12, by=4)
-network.no.list = seq(1, 5)
+network.no.list = seq(1, 2)
 
 for(n in graph.sizes){
 
@@ -45,9 +56,21 @@ for(n in graph.sizes){
 	plot.graph.stats(n, k, dens, prop.mispls, prop.negs, network.no.list)
 	
 	
+
 	# apply InfoMap
-	apply.infomap(n, k, dens, prop.mispls, prop.negs, network.no.list)
-	plot.algo.stats(n, k, dens, prop.mispls, prop.negs, network.no.list)
+	res = apply.partitioning.algo(IM, n, k, dens, prop.mispls, prop.negs, network.no.list)
+	if(res == -1)
+		tlog("unknown partitioning algo name:",IM)
+	else
+		plot.algo.stats(IM, n, k, dens, prop.mispls, prop.negs, network.no.list)
+	
+	
+	# apply ExCC
+	res = apply.partitioning.algo(ExCC, n, k, dens, prop.mispls, prop.negs, network.no.list)
+	if(res == -1)
+		tlog("unknown partitioning algo name:",ExCC)
+	else
+		plot.algo.stats(ExCC, n, k, dens, prop.mispls, prop.negs, network.no.list)
 }
 
 ###############################################################################

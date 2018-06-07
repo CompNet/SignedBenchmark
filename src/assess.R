@@ -13,10 +13,11 @@ source("src/plot.R")
 
 
 ###############################################################################
-# Applies the InfoMap algorithm to the signed graphs previously generated
+# Applies the given algorithm to the signed graphs previously generated
 # using the random model. The identified partition is recorded in the same folder
 # as the graph.
 #
+# algo.name: signed graph partitioning algo name or community detection algo name. Infomap or ExCC
 # n: number of nodes in the graph.
 # k: number of clusters in the graph.
 # dens: total density of the graph (counting both negative and positive links).
@@ -24,11 +25,11 @@ source("src/plot.R")
 # prop.negs: vector of proportions of negative links in the network (ignored if
 #			 the graphs are complete).
 ###############################################################################
-apply.infomap <- function(n, k, dens, prop.mispl, prop.neg, network.no.list)
+apply.partitioning.algo <- function(algo.name, n, k, dens, prop.mispl, prop.neg, network.no.list)
 {	
 #	if(dens==1)
 #		prop.negs <- NA
-	tlog(0,"Start to apply InfoMap to the previously generated collection of signed networks")
+	tlog(0, paste0("Start to apply ",algo.name," to the previously generalted collection of signed network",sep=""))
 	tlog(2,"Parameters:")
 	tlog(4,"n=",n)
 	tlog(4,"k=",k)
@@ -60,24 +61,49 @@ apply.infomap <- function(n, k, dens, prop.mispl, prop.neg, network.no.list)
 					# apply the partitioning algorithm
 					tlog(6,"Applying Infomap")
 					idx <- which(E(g)$weight<0)
-					g <- delete_edges(graph=g, edges=idx)
-					res <- infomap.community(graph=g,e.weights=NULL)
-					mbr <- as.vector(membership(res))
+					
+					mbr = NA
+					
+					# ==================================================================
+					# apply the partitioning algorithm
+					# ==================================================================
+					
+					tlog(6, paste("Applying ", algo.name, sep=""))
+					
+					if(algo.name == IM){
+						# ======== preprocessing for unsigned community detection algos
+						idx <- which(E(g)$weight<0)
+						g <- delete_edges(graph=g, edges=idx)
+						
+						res <- infomap.community(graph=g,e.weights=NULL)
+						mbr <- as.vector(membership(res)) # membership function from igraph package
+					} else if(algo.name == ExCC){
+						# a temporary file in order to get the result of the algo
+#						output.path = file.path(folder, "temp-ExCC-result.txt")
+						network.path = file.path(folder, paste0(GRAPH.FILENAME,".G"))						
+						mbr = run.ExCC(network.path, folder)
+#						unlink(output.path) # delete the temporary file
+					}
+					else { # unknown algo name
+						return(-1)
+					}
+					# =================================================================
 					
 					# record the result
-					file.part <- file.path(folder,"infomap.txt")
+					file.part <- file.path(folder,paste(algo.name,".txt", sep=""))
 					tlog(6,"Recording the partition in file ",file.part)
 					write.table(x=mbr,file=file.part,row.names=FALSE,col.names=FALSE)
 					
 					# plot the graph and detected partition
-					file.plot <- file.path(folder,"infomap.pdf")
+					file.plot <- file.path(folder, paste(algo.name,".pdf", sep=""))
 					tlog(6,"Plotting the graph in file ",file.plot)
 					g <- plot.network(g, membership, plot.file=file.plot, format="PDF")
 				}
 			}
 		}
 	}
-	tlog(0,"InfoMap processing over")
+	tlog(0, paste(algo.name," processing over",sep=""))
+	return(0) # success
 }	
 
 
@@ -87,6 +113,7 @@ apply.infomap <- function(n, k, dens, prop.mispl, prop.neg, network.no.list)
 # Generates performance plots, to check how the partitioning algorithms are
 # affected by changes in the graphs.
 #
+# algo.name: signed graph partitioning algo name or community detection algo name. Infomap or ExCC
 # n: number of nodes in the graph.
 # k: number of clusters in the graph.
 # dens: total density of the graph (counting both negative and positive links).
@@ -94,7 +121,7 @@ apply.infomap <- function(n, k, dens, prop.mispl, prop.neg, network.no.list)
 # prop.negs: vector of proportions of negative links in the network (ignored if
 #			 the graphs are complete).
 ###############################################################################
-plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs, network.no.list)
+plot.algo.stats <- function(algo.name, n, k, dens, prop.mispls, prop.negs, network.no.list)
 {	
 #	if(dens==1)
 #		prop.negs <- NA
@@ -104,8 +131,8 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs, network.no.list)
 	CODE_NMI <- "Normalized Mutual Information"
 	CODES <- c(CODE_IMBALANCE, CODE_NMI)
 	FILE_NAMES <- c()
-	FILE_NAMES[CODE_IMBALANCE] <- "infomap-imbalance"
-	FILE_NAMES[CODE_NMI] <- "infomap-nmi"
+	FILE_NAMES[CODE_IMBALANCE] <- paste0(algo.name, "-imbalance")
+	FILE_NAMES[CODE_NMI] <- paste0(algo.name, "-nmi")
 	gt.membership <- rep(1:k,each=n%/%k)
 	
 	
@@ -125,11 +152,11 @@ plot.algo.stats <- function(n, k, dens, prop.mispls, prop.negs, network.no.list)
 					tlog(2,"WARNING: Could not find graph file ",file,", probably couldn't be generated due to some parameter problem.")
 				else
 				{	g <- read.graph(file=file,format="graphml")
-					im.membership <- as.matrix(read.table(file=file.path(folder,"infomap.txt")))
+					membership <- as.matrix(read.table(file=file.path(folder,paste0(algo.name,".txt"))))	
 					el <- get.edgelist(graph=g,names=FALSE)
-					comembership <- sapply(1:nrow(el),function(r) im.membership[el[r,1]]==im.membership[el[r,2]])
+					comembership <- sapply(1:nrow(el),function(r) membership[el[r,1]]==membership[el[r,2]])
 					res[[network.no]][[CODE_IMBALANCE]][i,j] <- length(which((!comembership & E(g)$weight>0) | (comembership & E(g)$weight<0))) / ecount(g)
-					res[[network.no]][[CODE_NMI]][i,j] <- compare(gt.membership,im.membership,method="nmi")
+					res[[network.no]][[CODE_NMI]][i,j] <- compare(gt.membership,membership,method="nmi")
 				}
 			}
 		}
