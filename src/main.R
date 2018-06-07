@@ -46,8 +46,8 @@ for(n in graph.sizes){
 	
 	
 	# apply InfoMap
-#	apply.infomap(n, k, dens, prop.mispls, prop.negs)
-	#plot.algo.stats(n, k, dens, prop.mispls, prop.negs)
+	apply.infomap(n, k, dens, prop.mispls, prop.negs, network.no.list)
+	plot.algo.stats(n, k, dens, prop.mispls, prop.negs, network.no.list)
 }
 
 ###############################################################################

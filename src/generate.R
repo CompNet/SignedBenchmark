@@ -367,7 +367,7 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs, network.no.li
 	
 	
 	# generate the plots
-	for(network.no in network.no.list){		
+	for(network.no in network.no.list){
 		res2 = res[[network.no]] # res2 is a list containing a matrix
 		
 		for(code in CODES)
@@ -376,7 +376,6 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs, network.no.li
 			{	
 				# function of the proportion of misplaced links
 				folder <- get.plot.folder.path(n, k, dens, network.no=network.no)
-				print(folder)
 				dir.create(path=folder, showWarnings=FALSE, recursive=TRUE)
 				plot.file <- file.path(folder, paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
 				pdf(file=plot.file,bg="white")
