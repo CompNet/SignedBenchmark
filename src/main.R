@@ -15,12 +15,13 @@ GRAPH.FILENAME = "signed-unweighted"
 # set up the parameters
 #n <- 60						# number of nodes
 k <- 2						# number of (same-sized) clusters
-dens <- 1					# constant density
-prop.mispls <- seq(from=0, to=1, by=0.05)	# proportion of misplaced links
-prop.negs <- seq(from=0, to=1, by=0.05)		# proportion of negative links (ignored if the graph is complete)
+dens <- 1				# constant density
+prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
+prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links (ignored if the graph is complete)
+
 	
-graph.sizes = seq(from=44, to=80, by=4)
-network.no.list = seq(1, 10)
+graph.sizes = seq(from=12, to=12, by=4)
+network.no.list = seq(1, 5)
 
 for(n in graph.sizes){
 
@@ -38,19 +39,14 @@ for(n in graph.sizes){
 		# proportion of negative links = proporition of links located between clusters
 	}
 	
-
-	
-# plot stats'ta nasil yapmis bak
 	
 	# generate the networks
 	generate.signed.graphs(n, k, dens, prop.mispls, prop.negs, network.no.list)
-	
-	# TODO update based on 'network.no.list'
-#	plot.graph.stats(n, k, dens, prop.mispls, prop.negs)
+	plot.graph.stats(n, k, dens, prop.mispls, prop.negs, network.no.list)
 	
 	
 	# apply InfoMap
-	#apply.infomap(n, k, dens, prop.mispls, prop.negs)
+#	apply.infomap(n, k, dens, prop.mispls, prop.negs)
 	#plot.algo.stats(n, k, dens, prop.mispls, prop.negs)
 }
 

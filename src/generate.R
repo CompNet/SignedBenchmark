@@ -218,7 +218,7 @@ generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA, netw
 				
 				if(!all(is.na(g)))
 				{	# possibly create the output folder
-					folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg, network.no)
+					folder <- get.network.folder.path(n, k, dens, prop.mispl, prop.neg, network.no)
 					dir.create(folder,showWarnings=FALSE,recursive=TRUE)
 					
 #					# plot the graph
@@ -318,9 +318,9 @@ generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA, netw
 # prop.negs: vector of proportions of negative links in the network (ignored if
 #			 the density is 1, i.e. we want to generate complete graphs).
 ###############################################################################
-plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
+plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs, network.no.list)
 {	if(dens==1)
-		prop.negs <- NA
+#		prop.negs <- NA
 	tlog(0,"Start to compute the graph statistics")
 	
 	CODE_DENSITY <- "Density"
@@ -335,69 +335,82 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
 	FILE_NAMES[CODE_PROP_EXT] <- "prop_ext_links"
 	membership <- rep(1:k,each=n%/%k)
 	
-	# load each graph and process its stats
 	res <- list()
-	res[[CODE_DENSITY]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
-	res[[CODE_PROP_NEG]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
-	res[[CODE_PROP_MISP]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
-	res[[CODE_PROP_EXT]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
-	for(i in 1:length(prop.mispls))
-	{	for(j in 1:length(prop.negs))
-		{	
-			folder <- get.folder.path(n, k, dens, prop.mispls[i], prop.negs[j])
-			file <- file.path(folder,"network.graphml")
-			if(!file.exists(file))
-				tlog(2,"WARNING: Could not find graph file ",file,", probably couldn't be generated due to some parameter problem.")
-			else
-			{	g <- read.graph(file=file,format="graphml")
-				res[[CODE_DENSITY]][i,j] <- graph.density(graph=g)
-				res[[CODE_PROP_NEG]][i,j] <- length(which(E(g)$weight<0)) / ecount(g)
-				el <- get.edgelist(graph=g,names=FALSE)
-				comembership <- sapply(1:nrow(el),function(r) membership[el[r,1]]==membership[el[r,2]])
-				res[[CODE_PROP_MISP]][i,j] <- length(which((!comembership & E(g)$weight>0) | (comembership & E(g)$weight<0))) / ecount(g)
-				res[[CODE_PROP_EXT]][i,j] <- length(which(!comembership)) / ecount(g)
+	# load each graph and process its stats
+	for(network.no in network.no.list){
+		res[[network.no]] = list()
+		
+		res[[network.no]][[CODE_DENSITY]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
+		res[[network.no]][[CODE_PROP_NEG]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
+		res[[network.no]][[CODE_PROP_MISP]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
+		res[[network.no]][[CODE_PROP_EXT]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
+		
+		for(i in 1:length(prop.mispls))
+		{	for(j in 1:length(prop.negs))
+			{	
+				folder <- get.network.folder.path(n, k, dens, prop.mispls[i], prop.negs[j], network.no)
+				file <- file.path(folder,paste0(GRAPH.FILENAME,".graphml"))
+				if(!file.exists(file))
+					tlog(2,"WARNING: Could not find graph file ",file,", probably couldn't be generated due to some parameter problem.")
+				else
+				{	g <- read.graph(file=file,format="graphml")
+					res[[network.no]][[CODE_DENSITY]][i,j] <- graph.density(graph=g)
+					res[[network.no]][[CODE_PROP_NEG]][i,j] <- length(which(E(g)$weight<0)) / ecount(g)
+					el <- get.edgelist(graph=g,names=FALSE)
+					comembership <- sapply(1:nrow(el),function(r) membership[el[r,1]]==membership[el[r,2]])
+					res[[network.no]][[CODE_PROP_MISP]][i,j] <- length(which((!comembership & E(g)$weight>0) | (comembership & E(g)$weight<0))) / ecount(g)
+					res[[network.no]][[CODE_PROP_EXT]][i,j] <- length(which(!comembership)) / ecount(g)
+				}
 			}
-		}
+		}		
 	}
 	
+	
 	# generate the plots
-	for(code in CODES)
-	{	data <- res[[code]]
-		if(!all(is.na(data)))
-		{	# function of the proportion of misplaced links
-			folder <- get.folder.path(n, k, dens)
-			dir.create(path=folder, showWarnings=FALSE, recursive=TRUE)
-			plot.file <- file.path(folder, paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
-			pdf(file=plot.file,bg="white")
-				plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
-						ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
-						xlab="Desired proportion of misplaced links", ylab=code)
-				cc <- 1
-				for(j in 1:length(prop.negs))
-				{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
-					cc <- cc + 1
-				}
-				legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
-			dev.off()
-			
-			# function of the proportion of negative links
-			if(!all(is.na(prop.negs)))
-			{	cc <- 1
-				plot.file <- file.path(get.folder.path(n, k, dens), paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
+	for(network.no in network.no.list){		
+		res2 = res[[network.no]] # res2 is a list containing a matrix
+		
+		for(code in CODES)
+		{	data <- res2[[code]] # data is a matrix
+			if(!all(is.na(data)))
+			{	
+				# function of the proportion of misplaced links
+				folder <- get.plot.folder.path(n, k, dens, network.no=network.no)
+				print(folder)
+				dir.create(path=folder, showWarnings=FALSE, recursive=TRUE)
+				plot.file <- file.path(folder, paste0(FILE_NAMES[code],"_vs_propmisp.PDF"))
 				pdf(file=plot.file,bg="white")
-					plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
-						ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
-						xlab="Desired proportion of negative links", ylab=code)
-					for(i in 1:length(prop.mispls))
-					{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
+					plot(NULL, xlim=c(min(prop.mispls),max(prop.mispls)), 
+							ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
+							xlab="Desired proportion of misplaced links", ylab=code)
+					cc <- 1
+					for(j in 1:length(prop.negs))
+					{	lines(x=prop.mispls, y=data[,j], col=COLORS[cc])
 						cc <- cc + 1
 					}
-					legend(x="topright",fill=COLORS,legend=prop.negs, title="Misplaced links")
+					legend(x="topright",fill=COLORS,legend=prop.negs, title="Negative links")
 				dev.off()
+				
+				# function of the proportion of negative links
+				if(dens!=1 && !all(is.na(prop.negs)))
+				{	cc <- 1
+					plot.file <- file.path(folder, paste0(FILE_NAMES[code],"_vs_propneg.PDF"))
+					pdf(file=plot.file,bg="white")
+						plot(NULL, xlim=c(min(prop.negs),max(prop.negs)), 
+							ylim=c(min(data,na.rm=TRUE),max(data,na.rm=TRUE)),
+							xlab="Desired proportion of negative links", ylab=code)
+						for(i in 1:length(prop.mispls))
+						{	lines(x=prop.negs, y=data[i,], col=COLORS[cc])
+							cc <- cc + 1
+						}
+						legend(x="topright",fill=COLORS,legend=prop.mispls, title="Misplaced links")
+					dev.off()
+				}
+				
 			}
+			else
+				tlog(2,"WARNING: nothing to plot (no data)")
 		}
-		else
-			tlog(2,"WARNING: nothing to plot (no data)")
 	}
 
 	tlog(0,"Computation of the graph statistics over")
