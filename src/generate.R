@@ -179,9 +179,11 @@ generate.incomplete.signed.graph <- function(membership, dens, prop.mispl, prop.
 # prop.negs: vector of proportions of negative links in the network (ignored if
 #			 the density is 1).
 ###############################################################################
-generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
-{	if(dens==1)
-			prop.negs <- NA
+generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA, network.no.list)
+{	
+#	if(dens==1)
+#		prop.negs <- NA
+		
 	tlog(0,"Start to generate the collection of signed networks")
 	tlog(2,"Parameters:")
 	tlog(4,"n=",n)
@@ -199,58 +201,104 @@ generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
 		for(prop.mispl in prop.mispls)
 		{	tlog(4,"Processing prop.mispl=",prop.mispl)
 			
-			# generate the graph
-			tlog(6,"Generating the graph")
-			if(dens<1)
-				g <- tryCatch(
-					generate.incomplete.signed.graph(membership, dens, prop.mispl, prop.neg),
-					error=function(e) NA
-				)
-			else
-				g <- tryCatch(
-						generate.complete.signed.graph(membership, prop.mispl),
+			for(network.no in network.no.list){
+				
+				# generate the graph
+				tlog(6,"Generating the graph")
+				if(dens<1)
+					g <- tryCatch(
+						generate.incomplete.signed.graph(membership, dens, prop.mispl, prop.neg),
 						error=function(e) NA
-				)
-			
-			if(!all(is.na(g)))
-			{	# possibly create the output folder
-				folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg)
-				dir.create(folder,showWarnings=FALSE,recursive=TRUE)
+					)
+				else
+					g <- tryCatch(
+							generate.complete.signed.graph(membership, prop.mispl),
+							error=function(e) NA
+					)
 				
-				# plot the graph
-				file.plot <- file.path(folder,"network")
-				tlog(6,"Plotting the graph in file ",file.plot)
-				g <- plot.network(g, membership, plot.file=file.plot, format="PDF", method="fruchterman.reingold")
+				if(!all(is.na(g)))
+				{	# possibly create the output folder
+					folder <- get.folder.path(n, k, dens, prop.mispl, prop.neg, network.no)
+					dir.create(folder,showWarnings=FALSE,recursive=TRUE)
+					
+#					# plot the graph
+#					file.plot <- file.path(folder,"network")
+#					tlog(6,"Plotting the graph in file ",file.plot)
+#					g <- plot.network(g, membership, plot.file=file.plot, format="PDF", method="fruchterman.reingold")
+					
+					# record the graph
+					file.graph <- file.path(folder,paste0(GRAPH.FILENAME,".graphml"))
+					tlog(6,"Recording the graph in file ",file.graph)
+					write_graph(graph=g,file=file.graph,format="graphml")
+					
+					# ========================================================
+					# NEW
+					
+					# export using a format compatible with pILS
+					t <- get.edgelist(graph=g) - 1	# start numbering nodes at zero
+					t <- cbind(t,E(g)$weight)		# add weights as the third column
+					file.graph <- file.path(folder,paste0(GRAPH.FILENAME,".G"))
+					write.table(data.frame(vcount(g),nrow(t)), file=file.graph, append=FALSE, sep="\t", row.names=FALSE, col.names=FALSE) # write header
+					write.table(t, file=file.graph, append=TRUE, sep="\t", row.names=FALSE, col.names=FALSE) # write proper graph
 				
-				# record the graph
-				file.graph <- file.path(folder,"network.graphml")
-				tlog(6,"Recording the graph in file ",file.graph)
-				write_graph(graph=g,file=file.graph,format="graphml")
-			}
-			else
-			{	qm <- prop.mispl
-				p.ext <- sum(apply(t(combn(x=max(membership),m=2,simplify=TRUE)), 1, function(r)
-				{	n1 <- length(which(membership==r[1]))
-					n2 <- length(which(membership==r[2]))
-					n1 * n2
-				})) / (n*(n-1)/2)
 				
-				if(qm==0.5)
-				{	upper.bound <- 2 * min(p.ext, 1 - p.ext)
-					tlog(8,"Could not generate the graph: the dens parameter (",sprintf("%.4f",dens),") is greater than ",sprintf("%.4f",upper.bound))
+					# export using a format compatible with JENA
+#					n = vcount(g)
+					mtrx = as_adj(graph=g,attr="weight")
+					adj.mtrx.text = ""
+					for(i in 1:(n-2)){
+						for(j in 1:n){
+							if(i<j){
+								if(i == (j-1)){
+									adj.mtrx.text = paste0(adj.mtrx.text, mtrx[i,j])
+								} else{
+									adj.mtrx.text = paste(adj.mtrx.text, mtrx[i,j])
+								}
+							} 
+							
+						}
+						adj.mtrx.text = paste(adj.mtrx.text,"\n",sep="")
+					}
+					adj.mtrx.text = paste(adj.mtrx.text, mtrx[n-1,n], sep="")
+					
+					text=paste(as.character(n),"\n",sep="")
+					for(v in 1:n){
+						text=paste(text,(v-1),"\n",sep="")
+					}
+					write(x=paste0(text,adj.mtrx.text),file=file.path(folder,paste0(GRAPH.FILENAME,".jena")))
+					
+					# export using a format compatible with PAJEK
+					write.graph(graph=g, file=file.path(folder,paste0(GRAPH.FILENAME,".net")), format="pajek")
+					
+					# NEW - END
+					# ========================================================
 				}
 				else
-				{	if(qm<0.5)
-					{	lower.bound <- max(0, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
-						upper.bound <- min(1, (p.ext - dens*qm) / (dens*(1-2*qm)))
+				{	qm <- prop.mispl
+					p.ext <- sum(apply(t(combn(x=max(membership),m=2,simplify=TRUE)), 1, function(r)
+					{	n1 <- length(which(membership==r[1]))
+						n2 <- length(which(membership==r[2]))
+						n1 * n2
+					})) / (n*(n-1)/2)
+					
+					if(qm==0.5)
+					{	upper.bound <- 2 * min(p.ext, 1 - p.ext)
+						tlog(8,"Could not generate the graph: the dens parameter (",sprintf("%.4f",dens),") is greater than ",sprintf("%.4f",upper.bound))
 					}
 					else
-					{	lower.bound <- max(0, (p.ext - dens*qm) / (dens*(1-2*qm)))
-						upper.bound <- min(1, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
+					{	if(qm<0.5)
+						{	lower.bound <- max(0, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
+							upper.bound <- min(1, (p.ext - dens*qm) / (dens*(1-2*qm)))
+						}
+						else
+						{	lower.bound <- max(0, (p.ext - dens*qm) / (dens*(1-2*qm)))
+							upper.bound <- min(1, (dens*(1-qm) - (1 - p.ext)) / (dens*(1-2*qm)))
+						}
+						tlog(6,"Could not generate the graph: the prop.neg parameter (",sprintf("%.4f",prop.neg),") is out of range [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
 					}
-					tlog(6,"Could not generate the graph: the prop.neg parameter (",sprintf("%.4f",prop.neg),") is out of range [",sprintf("%.4f",lower.bound)," ; ",sprintf("%.4f",upper.bound),"]")
 				}
 			}
+			
 		}
 	}
 	
@@ -295,7 +343,8 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
 	res[[CODE_PROP_EXT]] <- matrix(NA,nrow=length(prop.mispls),ncol=length(prop.negs))
 	for(i in 1:length(prop.mispls))
 	{	for(j in 1:length(prop.negs))
-		{	folder <- get.folder.path(n, k, dens, prop.mispls[i], prop.negs[j])
+		{	
+			folder <- get.folder.path(n, k, dens, prop.mispls[i], prop.negs[j])
 			file <- file.path(folder,"network.graphml")
 			if(!file.exists(file))
 				tlog(2,"WARNING: Could not find graph file ",file,", probably couldn't be generated due to some parameter problem.")
@@ -352,7 +401,7 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs=NA)
 	}
 
 	tlog(0,"Computation of the graph statistics over")
-}	
+}
 
 
 
