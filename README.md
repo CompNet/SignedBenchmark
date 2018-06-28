@@ -1,4 +1,4 @@
-SignedBenchmark v1
+SignedBenchmark v1.1
 ==================
 *Benchmark to study partitioning problems on signed graphs*
 
