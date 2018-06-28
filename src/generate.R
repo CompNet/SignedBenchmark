@@ -51,7 +51,8 @@ generate.complete.signed.graph <- function(membership, prop.mispl)
 	half.misp <- floor(m*prop.mispl/2)
 	idx.p <- which(weights>0)
 	idx.n <- which(weights<0)
-	upper.bound <- min(length(idx.p), length(idx.n)) / m
+	half.upper.bound <- min(length(idx.p), length(idx.n)) / m
+	upper.bound = half.upper.bound * 2
 	if(prop.mispl>upper.bound)
 		stop("Parameter prop.mispl (",sprintf("%.4f",prop.mispl),") must be smaller or equal to ",sprintf("%.4f",upper.bound))
 	
