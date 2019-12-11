@@ -1,9 +1,8 @@
-
-SignedBenchmark v1
+SignedBenchmark v1.1
 ==================
 *Benchmark to study partitioning problems on signed graphs*
 
-* Copyright 2017 Vincent Labatut 
+* Copyright 2017-18 Vincent Labatut 
 
 SignedBenchmark is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation. For source availability and license information see `licence.txt`
 
