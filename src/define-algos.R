@@ -5,7 +5,8 @@
 ExCC <- "ExCC"
 ExCC.LIB.FOLDER = file.path(LIB.FOLDER,ExCC)
 ExCC.JAR.PATH = paste(ExCC.LIB.FOLDER,"cplex-partition.jar",sep="/") # gaia cluster - CERI
-CPLEX.BIN.PATH = "/users/narinik/Cplex/ILOG/CPLEX_Studio128/cplex/bin/x86-64_linux/"
+#CPLEX.BIN.PATH = "/users/narinik/Cplex/ILOG/CPLEX_Studio128/cplex/bin/x86-64_linux/" # LIA server
+CPLEX.BIN.PATH = "/opt/ibm/ILOG/CPLEX_Studio128/cplex/bin/x86-64_linux/" # in my computer
 
 # ===============================================================
 # Infomap
