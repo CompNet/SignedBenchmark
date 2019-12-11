@@ -36,7 +36,7 @@ apply.partitioning.algo <- function(algo.name, n, k, dens, prop.mispl, prop.neg,
 	tlog(4,"dens=",dens)
 	tlog(4,"prop.mispls=",paste(prop.mispls, collapse=", "))
 	tlog(4,"prop.negs=",paste(prop.negs, collapse=", "))
-	membership <- rep(1:k,each=n%/%k)
+	membership <- generate.param.membership(n, k)
 	
 	for(network.no in network.no.list){
 		tlog(2,"Processing network.no=",network.no)
@@ -133,7 +133,7 @@ plot.algo.stats <- function(algo.name, n, k, dens, prop.mispls, prop.negs, netwo
 	FILE_NAMES <- c()
 	FILE_NAMES[CODE_IMBALANCE] <- paste0(algo.name, "-imbalance")
 	FILE_NAMES[CODE_NMI] <- paste0(algo.name, "-nmi")
-	gt.membership <- rep(1:k,each=n%/%k)
+	gt.membership <- generate.param.membership(n, k)
 	
 	
 	res <- list()

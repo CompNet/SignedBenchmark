@@ -192,7 +192,7 @@ generate.signed.graphs <- function(n, k, dens=1, prop.mispls, prop.negs=NA, netw
 	tlog(4,"dens=",dens)
 	tlog(4,"prop.mispls=",paste(prop.mispls, collapse=", "))
 	tlog(4,"prop.negs=",paste(prop.negs, collapse=", "))
-	membership <- rep(1:k,each=n%/%k)
+	membership <- generate.param.membership(n, k)
 	
 	# process separately each value for the proportion of negative links
 	for(prop.neg in prop.negs)
@@ -334,7 +334,7 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs, network.no.li
 	FILE_NAMES[CODE_PROP_NEG] <- "prop_neg_links"
 	FILE_NAMES[CODE_PROP_MISP] <- "prop_misp_links"
 	FILE_NAMES[CODE_PROP_EXT] <- "prop_ext_links"
-	membership <- rep(1:k,each=n%/%k)
+	membership <- generate.param.membership(n, k)
 	
 	res <- list()
 	# load each graph and process its stats
@@ -432,7 +432,7 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs, network.no.li
 
 #n <- 25
 #k <- 5
-#membership <- rep(1:k,each=n%/%k)
+#membership <- generate.param.membership(n, k)
 #dens <- 0.1
 #prop.mispl <- 0.1
 #prop.neg <- 0.3
@@ -441,7 +441,7 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs, network.no.li
 
 #n <- 30
 #k <- 3
-#membership <- rep(1:k,each=n%/%k)
+#membership <- generate.param.membership(n, k)
 #dens <- 0.2
 #prop.mispl <- 0.1
 #prop.neg <- 0.3
@@ -450,7 +450,7 @@ plot.graph.stats <- function(n, k, dens=1, prop.mispls, prop.negs, network.no.li
 
 #n <- 30
 #k <- 2
-#membership <- rep(1:k,each=n%/%k)
+#membership <- generate.param.membership(n, k)
 #dens <- 1
 #prop.mispl <- 0.1
 #g <- generate.complete.signed.graph(membership, prop.mispl)

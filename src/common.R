@@ -4,7 +4,26 @@
 # 05/2016 Vincent Labatut
 #############################################################################################
 
-
+#############################################################################################
+# Generates a membership vector with number of total nodes in graph (n) and the number of clusters (k).
+#    If n is multiple of k, the generated membership will be uniform partition, i.e. each cluster has the same number of nodes.
+#    Otherwise, the final membership will be approximately uniform partition.
+#    And, this generation is deterministic. If it is run multiple times, it will give the same result. 
+#
+# n: number of total nodes in graph
+# k: the number of clusters
+#############################################################################################
+generate.param.membership = function(n, k){
+	nrest = rep(0,k) # init
+	nc = rep(n%/%k, k) # cluster size vector
+	rest = n%%k
+	if(rest>0){
+		nrest[1:rest] = rep(1,rest)
+		nc = nc + nrest
+	}
+	membership <- rep(1:k, nc)
+	return(membership)
+}
 
 
 #############################################################################################

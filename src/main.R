@@ -25,7 +25,7 @@ source("src/generate.R")
 
 # set up the parameters
 #n <- 60									# number of nodes
-k <- 2										# number of (same-sized) clusters
+k <- 5										# number of (same-sized) clusters
 dens <- 1									# constant density
 prop.mispls <- seq(from=0, to=1, by=0.1)	# proportion of misplaced links
 prop.negs <- seq(from=0, to=1, by=0.1)		# proportion of negative links (ignored if the graph is complete)
@@ -39,7 +39,7 @@ for(n in graph.sizes){
 	if(dens == 1){
 		# prop.negs depend only on graph size when density=1
 		# because we use different model hypothesis 
-		membership <- rep(1:k,each=n%/%k)
+		membership <- generate.param.membership(n, k)
 		pext <- sum(apply(t(combn(x=max(membership),m=2,simplify=TRUE)), 1, function(r)
 						{	n1 <- length(which(membership==r[1]))
 							n2 <- length(which(membership==r[2]))
