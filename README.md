@@ -4,7 +4,7 @@ SignedBenchmark v1.1
 
 * Copyright 2017-18 Vincent Labatut 
 
-SignedBenchmark is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation. For source availability and license information see `licence.txt`
+`SignedBenchmark` is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation. For source availability and license information see `licence.txt`
 
 * Lab site: http://lia.univ-avignon.fr/
 * GitHub repo: https://github.com/CompNet/SignedBenchmark
@@ -13,11 +13,21 @@ SignedBenchmark is free software: you can redistribute it and/or modify it under
 -----------------------------------------------------------------------
 
 # Description
-This set of R scripts was designed to randomly generate signed graphs possessing some form of community structure,
-in order to assess partitioning algorithms. 
+This set of `R` scripts was designed to randomly generate signed graphs possessing some form of community structure, in order to assess partitioning algorithms.
 
-
-# Data
+If you use this software, please cite the following article:
+```bibtex
+@Article{Arinik2020a,
+  author    = {Arınık, Nejat and Figueiredo, Rosa and Labatut, Vincent},
+  title     = {Multiplicity and Diversity: Analyzing the Optimal Solution Space of the Correlation Clustering Problem on Complete Signed Graphs},
+  journal   = {Journal of Complex Networks},
+  year      = {2020},
+  volume    = {8},
+  number    = {6},
+  pages     = {cnaa025},
+  doi       = {10.1093/comnet/cnaa025},
+}
+```
 
 
 # Organization
@@ -36,23 +46,11 @@ Here are the folders composing the project:
 
 # Use
 In order to replicate the experiments from the article, perform the following operations:
-
 1. Open the `R` console.
 2. Set the current projetct directory as the working directory, using `setwd("my/path/to/the/project/SignedBenchmark")`.
 3. Run `src/main.R`
   
 
-# Extension
-
-
 # Dependencies
 * [`igraph`](http://igraph.org/r/) package: used to build and handle graphs.
 * [`expm`](https://cran.r-project.org/web/packages/expm/index.html) package: power of matrices.
-
-
-# To-do List
-* N/A
-
-
-# References
-* N/A
